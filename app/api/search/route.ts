@@ -17,11 +17,12 @@ export async function GET(request: Request) {
 
   console.log(url);
 
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
+ const res = await fetch(url, {
+  headers: {
+    Accept: "application/json",
+    Origin: "https://babytoku.vercel.app",
+  },
+});
 
   const data = await res.json();
 
