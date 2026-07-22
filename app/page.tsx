@@ -47,7 +47,7 @@ export default function Home() {
     <ul className="mt-4">
       {items.map((item: any, index) => (
        <li key={index} className="mb-2">
-       {item.itemName}
+       <pre>{JSON.stringify(item, null, 2)}</pre>
        </li>
       ))}
     </ul>
