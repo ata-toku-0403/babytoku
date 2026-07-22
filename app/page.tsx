@@ -5,6 +5,7 @@ import { useState } from "react";
 export default function Home() {
   const [keyword, setKeyword] = useState("");
   const [searchWord, setSearchWord] = useState("");
+  const [items, setItems] = useState<any[]>([]);
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -19,9 +20,23 @@ export default function Home() {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"/> 
-          <button className="mt-4 rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
-                  onClick={() => setSearchWord(keyword)}>
-                  価格を比較する
+          <button
+            className="mt-4 rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
+            onClick={async () => {
+              setSearchWord(keyword);
+
+              const res = await fetch(
+                `/api/search?keyword=${encodeURIComponent(keyword)}`
+              );
+
+              const data = await res.json();
+
+              console.log(data);
+
+              setItems(data.Items ?? []);
+             }}
+           >
+            価格を比較する
           </button>
           <p className="mt-4 text-gray-700">
              検索中：{searchWord}
@@ -29,6 +44,13 @@ export default function Home() {
           {searchWord && (
   <div className="mt-6">
     <h2 className="text-lg font-bold">検索結果</h2>
+    <ul className="mt-4">
+      {items.map((item: any, index) => (
+       <li key={index} className="mb-2">
+       {item.itemName}
+       </li>
+      ))}
+    </ul>
 
     <a
       href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(searchWord)}`}
