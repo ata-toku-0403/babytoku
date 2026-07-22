@@ -44,13 +44,19 @@ export default function Home() {
           {searchWord && (
   <div className="mt-6">
     <h2 className="text-lg font-bold">検索結果</h2>
-    <ul className="mt-4">
-      {items.map((item: any, index) => (
-       <li key={index} className="mb-2">
-       <pre>{JSON.stringify(item, null, 2)}</pre>
-       </li>
-      ))}
-    </ul>
+   <ul className="mt-4">
+     {items.map((item: any, index) => (
+      <li key={index} className="mb-4 rounded border p-3">
+        <div className="font-bold">
+          {item.Item.itemName}
+        </div>
+
+        <div className="text-red-600 font-semibold">
+          {item.Item.itemPrice.toLocaleString()} 円
+        </div>
+      </li>
+    ))}
+  </ul>
 
     <a
       href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(searchWord)}`}
