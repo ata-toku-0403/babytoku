@@ -44,19 +44,41 @@ export default function Home() {
           {searchWord && (
   <div className="mt-6">
     <h2 className="text-lg font-bold">検索結果</h2>
-   <ul className="mt-4">
-     {items.map((item: any, index) => (
-      <li key={index} className="mb-4 rounded border p-3">
-        <div className="font-bold">
-          {item.Item.itemName}
+   <ul className="mt-6 w-full max-w-2xl space-y-4">
+    {items.map((item: any, index) => (
+     <li
+       key={index}
+       className="flex gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow"
+    >
+      <img
+        src={item.Item.mediumImageUrls?.[0]?.imageUrl}
+        alt={item.Item.itemName}
+        className="h-28 w-28 rounded object-contain"
+      />
+
+      <div className="flex flex-1 flex-col justify-between">
+        <div>
+          <h3 className="font-bold text-lg">
+            {item.Item.itemName}
+          </h3>
+
+          <p className="mt-2 text-2xl font-bold text-red-600">
+            ¥{item.Item.itemPrice.toLocaleString()}
+          </p>
         </div>
 
-        <div className="text-red-600 font-semibold">
-          {item.Item.itemPrice.toLocaleString()} 円
-        </div>
-      </li>
-    ))}
-  </ul>
+        <a
+          href={item.Item.itemUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
+        >
+          楽天で見る
+        </a>
+      </div>
+     </li>
+     ))}
+   </ul>
 
     <a
       href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(searchWord)}`}
@@ -83,25 +105,6 @@ export default function Home() {
     </a>
   </div>
 )}
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
         </div>
       </main>
     </div>
