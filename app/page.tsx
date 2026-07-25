@@ -6,6 +6,12 @@ export default function Home() {
   const [keyword, setKeyword] = useState("");
   const [searchWord, setSearchWord] = useState("");
   const [items, setItems] = useState<any[]>([]);
+  const cheapest =
+  items.length > 0
+    ? [...items].sort(
+        (a, b) => a.Item.itemPrice - b.Item.itemPrice
+      )[0]
+    : null;
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -43,6 +49,42 @@ export default function Home() {
           </p>
           {searchWord && (
   <div className="mt-6">
+    {cheapest && (
+     <div className="mb-8 rounded-2xl border-2 border-yellow-400 bg-yellow-50 p-5 shadow">
+      <div className="mb-3 text-lg font-bold text-yellow-700">
+       🏆 楽天最安値
+      </div>
+
+      <div className="flex gap-4">
+       <img
+         src={cheapest.Item.mediumImageUrls?.[0]?.imageUrl}
+         alt={cheapest.Item.itemName}
+         className="h-28 w-28 rounded object-contain"
+       />
+
+      <div className="flex flex-1 flex-col justify-between">
+        <div>
+          <div className="font-bold">
+            {cheapest.Item.itemName}
+          </div>
+
+          <div className="mt-2 text-3xl font-bold text-red-600">
+            ¥{cheapest.Item.itemPrice.toLocaleString()}
+          </div>
+        </div>
+
+        <a
+          href={cheapest.Item.itemUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
+        >
+          楽天で見る
+        </a>
+      </div>
+    </div>
+  </div>
+)}
     <h2 className="text-lg font-bold">検索結果</h2>
    <ul className="mt-6 w-full max-w-2xl space-y-4">
     {items.map((item: any, index) => (
