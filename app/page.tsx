@@ -7,26 +7,31 @@ export default function Home() {
   const [searchWord, setSearchWord] = useState("");
   const [items, setItems] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const cheapest = useMemo(() => {
-   if (items.length === 0) return null;
+
   const search = async () => {
-  setSearchWord(keyword);
-   const res = await fetch(
-     `/api/search?keyword=${encodeURIComponent(keyword)}`
-      );
-   const data = await res.json();
-    console.log(data);
-   const sortedItems = [...(data.Items ?? [])].sort(
-     (a, b) => a.Item.itemPrice - b.Item.itemPrice
-      );
+   setSearchWord(keyword);
+
+  const res = await fetch(
+    `/api/search?keyword=${encodeURIComponent(keyword)}`
+    );
+
+  const data = await res.json();
+
+   console.log(data);
+
+  const sortedItems = [...(data.Items ?? [])].sort(
+    (a, b) => a.Item.itemPrice - b.Item.itemPrice
+    );
+
    setItems(sortedItems);
    setTotalCount(data.count ?? 0);
    };
 
-   return [...items].sort(
-     (a, b) => a.Item.itemPrice - b.Item.itemPrice
-   )[0];
-  }, [items]);
+  const cheapest = useMemo(() => {
+    if (items.length === 0) return null;
+
+    return items[0];
+    }, [items]);
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -36,12 +41,18 @@ export default function Home() {
           </h1>
           <p>子育て世代のおトクを増やす。</p>
          <input
-          type="text"
-          placeholder="商品名を入力（例：はぐくみ）"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"/> 
-          <button
+            type="text"
+            placeholder="商品名を入力（例：はぐくみ）"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => {
+            if (e.key === "Enter") {
+            search();
+            }
+            }}
+            className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"
+            />
+           <button
             className="mt-4 rounded-lg bg-blue-600 px-6 py-3 text-white
             hover:bg-blue-700
             active:scale-95
