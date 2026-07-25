@@ -9,6 +9,19 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0);
   const cheapest = useMemo(() => {
    if (items.length === 0) return null;
+  const search = async () => {
+  setSearchWord(keyword);
+   const res = await fetch(
+     `/api/search?keyword=${encodeURIComponent(keyword)}`
+      );
+   const data = await res.json();
+    console.log(data);
+   const sortedItems = [...(data.Items ?? [])].sort(
+     (a, b) => a.Item.itemPrice - b.Item.itemPrice
+      );
+   setItems(sortedItems);
+   setTotalCount(data.count ?? 0);
+   };
 
    return [...items].sort(
      (a, b) => a.Item.itemPrice - b.Item.itemPrice
@@ -30,24 +43,7 @@ export default function Home() {
           className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"/> 
           <button
             className="mt-4 rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
-            onClick={async () => {
-              setSearchWord(keyword);
-
-              const res = await fetch(
-                `/api/search?keyword=${encodeURIComponent(keyword)}`
-              );
-
-              const data = await res.json();
-
-              console.log(data);
-
-              const sortedItems = [...(data.Items ?? [])].sort(
-               (a, b) => a.Item.itemPrice - b.Item.itemPrice
-               );
-
-              setItems(sortedItems);
-              setTotalCount(data.count ?? 0);
-             }}
+            onClick={search}
            >
             価格を比較する
           </button>
