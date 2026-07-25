@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function Home() {
   const [keyword, setKeyword] = useState("");
   const [searchWord, setSearchWord] = useState("");
   const [items, setItems] = useState<any[]>([]);
-  const cheapest =
-  items.length > 0
-    ? [...items].sort(
-        (a, b) => a.Item.itemPrice - b.Item.itemPrice
-      )[0]
-    : null;
+  const [totalCount, setTotalCount] = useState(0);
+  const cheapest = useMemo(() => {
+   if (items.length === 0) return null;
+
+   return [...items].sort(
+     (a, b) => a.Item.itemPrice - b.Item.itemPrice
+   )[0];
+  }, [items]);
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -40,6 +42,7 @@ export default function Home() {
               console.log(data);
 
               setItems(data.Items ?? []);
+              setTotalCount(data.count ?? 0);
              }}
            >
             価格を比較する
@@ -85,7 +88,9 @@ export default function Home() {
     </div>
   </div>
 )}
-    <h2 className="text-lg font-bold">検索結果</h2>
+    <h2 className="text-lg font-bold">
+     検索結果（{totalCount}件）
+    </h2>
    <ul className="mt-6 w-full max-w-2xl space-y-4">
     {items.map((item: any, index) => (
      <li
@@ -100,7 +105,7 @@ export default function Home() {
 
       <div className="flex flex-1 flex-col justify-between">
         <div>
-          <h3 className="font-bold text-lg">
+          <h3 className="font-bold text-lg line-clamp-2">
             {item.Item.itemName}
           </h3>
 
@@ -108,43 +113,10 @@ export default function Home() {
             ¥{item.Item.itemPrice.toLocaleString()}
           </p>
         </div>
-
-        <a
-          href={item.Item.itemUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
-        >
-          楽天で見る
-        </a>
       </div>
      </li>
      ))}
    </ul>
-
-    <a
-      href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(searchWord)}`}
-      target="_blank"
-      className="block mt-2 text-blue-600 underline"
-    >
-      Amazonで検索
-    </a>
-
-    <a
-      href={`https://search.rakuten.co.jp/search/mall/${encodeURIComponent(searchWord)}/`}
-      target="_blank"
-      className="block mt-2 text-blue-600 underline"
-    >
-      楽天市場で検索
-    </a>
-
-    <a
-      href={`https://shopping.yahoo.co.jp/search?p=${encodeURIComponent(searchWord)}`}
-      target="_blank"
-      className="block mt-2 text-blue-600 underline"
-    >
-      Yahoo!ショッピングで検索
-    </a>
   </div>
 )}
         </div>
