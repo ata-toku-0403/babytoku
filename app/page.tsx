@@ -41,7 +41,11 @@ export default function Home() {
 
               console.log(data);
 
-              setItems(data.Items ?? []);
+              const sortedItems = [...(data.Items ?? [])].sort(
+               (a, b) => a.Item.itemPrice - b.Item.itemPrice
+               );
+
+              setItems(sortedItems);
               setTotalCount(data.count ?? 0);
              }}
            >
