@@ -42,7 +42,12 @@ export default function Home() {
           onChange={(e) => setKeyword(e.target.value)}
           className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"/> 
           <button
-            className="mt-4 rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
+            className="mt-4 rounded-lg bg-blue-600 px-6 py-3 text-white
+            hover:bg-blue-700
+            active:scale-95
+            active:bg-blue-800
+            transition
+            duration-150"
             onClick={search}
            >
             価格を比較する
