@@ -90,6 +90,24 @@ export default function Home() {
           <div className="mt-2 text-3xl font-bold text-red-600">
             ¥{cheapest.Item.itemPrice.toLocaleString()}
           </div>
+          <p className="mt-1 text-sm text-blue-600">
+           ポイント：
+            {Math.floor(
+             cheapest.Item.itemPrice *
+             cheapest.Item.pointRate / 100
+             ).toLocaleString()}pt
+          </p>
+
+          <p className="mt-1 text-lg font-bold text-green-600">
+           実質価格：
+            ¥{(
+             cheapest.Item.itemPrice -
+              Math.floor(
+              cheapest.Item.itemPrice *
+              cheapest.Item.pointRate / 100
+              )
+            ).toLocaleString()}
+          </p>
         </div>
 
         <a
