@@ -108,7 +108,18 @@ export default function Home() {
      検索結果（{totalCount}件）
     </h2>
    <ul className="mt-6 w-full max-w-2xl space-y-4">
-    {items.map((item: any, index) => (
+    {items.map((item: any, index) => {
+
+     const point =
+      Math.floor(
+       item.Item.itemPrice *
+       item.Item.pointRate / 100
+      );
+
+     const realPrice =
+       item.Item.itemPrice - point;
+
+  return (
      <li
        key={index}
        className="flex gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow"
@@ -121,17 +132,26 @@ export default function Home() {
 
       <div className="flex flex-1 flex-col justify-between">
         <div>
-          <h3 className="font-bold text-lg line-clamp-2">
-            {item.Item.itemName}
-          </h3>
+         <h3 className="font-bold text-lg line-clamp-2">
+          {item.Item.itemName}
+         </h3>
 
-          <p className="mt-2 text-2xl font-bold text-red-600">
-            ¥{item.Item.itemPrice.toLocaleString()}
-          </p>
+         <p className="mt-2 text-2xl font-bold text-red-600">
+          ¥{item.Item.itemPrice.toLocaleString()}
+         </p>
+
+         <p className="mt-1 text-sm text-blue-600">
+           ポイント：{point.toLocaleString()}pt
+         </p>
+
+        <p className="mt-1 text-lg font-bold text-green-600">
+           実質価格：¥{realPrice.toLocaleString()}
+        </p>
         </div>
       </div>
      </li>
-     ))}
+     );
+    })}
    </ul>
   </div>
 )}
