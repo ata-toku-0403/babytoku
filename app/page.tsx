@@ -108,7 +108,7 @@ export default function Home() {
              ).toLocaleString()}pt
           </p>
 
-          <p className="mt-1 text-lg font-bold text-green-600">
+          <p className="mt-1 text-3xl font-bold text-green-600">
            実質価格：
             ¥{(
              cheapest.Item.itemPrice -
@@ -172,7 +172,7 @@ export default function Home() {
            ポイント：{point.toLocaleString()}pt
          </p>
 
-        <p className="mt-1 text-lg font-bold text-green-600">
+        <p className="mt-1 text-2xl font-bold text-green-600">
            実質価格：¥{realPrice.toLocaleString()}
         </p>
         </div>
