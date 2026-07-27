@@ -19,9 +19,19 @@ export default function Home() {
 
    console.log(data);
 
-  const sortedItems = [...(data.Items ?? [])].sort(
-    (a, b) => a.Item.itemPrice - b.Item.itemPrice
-    );
+  const sortedItems = [...(data.Items ?? [])].sort((a, b) => {
+  const pointA = Math.floor(
+    a.Item.itemPrice * a.Item.pointRate / 100
+  );
+  const pointB = Math.floor(
+    b.Item.itemPrice * b.Item.pointRate / 100
+  );
+
+  const realPriceA = a.Item.itemPrice - pointA;
+  const realPriceB = b.Item.itemPrice - pointB;
+
+  return realPriceA - realPriceB;
+});
 
    setItems(sortedItems);
    setTotalCount(data.count ?? 0);
