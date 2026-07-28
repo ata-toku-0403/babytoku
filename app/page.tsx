@@ -100,24 +100,34 @@ export default function Home() {
           <div className="mt-2 text-3xl font-bold text-red-600">
             ¥{cheapest.Item.itemPrice.toLocaleString()}
           </div>
-          <p className="mt-1 text-sm text-blue-600">
-           ポイント：
-            {Math.floor(
-             cheapest.Item.itemPrice *
-             cheapest.Item.pointRate / 100
-             ).toLocaleString()}pt
-          </p>
+        <p className="mt-1 text-orange-600 font-bold">
+        🔥 ポイント {cheapest.Item.pointRate}倍
+        </p>
 
-          <p className="mt-1 text-3xl font-bold text-green-600">
+        <p className="mt-1 text-blue-600">
+         獲得予定：約
+         {Math.floor(
+         cheapest.Item.itemPrice *
+         cheapest.Item.pointRate / 100
+         ).toLocaleString()}
+         pt
+        </p>
+
+        <p className="text-sm text-gray-500">
+         終了：
+         {cheapest.Item.pointRateEndTime || "通常ポイント"}
+        </p>
+
+         <p className="mt-2 text-3xl font-bold text-green-600">
            実質価格：
-            ¥{(
-             cheapest.Item.itemPrice -
-              Math.floor(
-              cheapest.Item.itemPrice *
-              cheapest.Item.pointRate / 100
-              )
-            ).toLocaleString()}
-          </p>
+           ¥{(
+           cheapest.Item.itemPrice -
+           Math.floor(
+           cheapest.Item.itemPrice *
+           cheapest.Item.pointRate / 100
+           )
+          ).toLocaleString()}
+         </p>
         </div>
 
         <a
@@ -168,13 +178,22 @@ export default function Home() {
           ¥{item.Item.itemPrice.toLocaleString()}
          </p>
 
-         <p className="mt-1 text-sm text-blue-600">
-           ポイント：{point.toLocaleString()}pt
+         <p className="mt-1 text-orange-600 font-bold">
+          🔥 ポイント {item.Item.pointRate}倍
          </p>
 
-        <p className="mt-1 text-2xl font-bold text-green-600">
-           実質価格：¥{realPrice.toLocaleString()}
-        </p>
+         <p className="mt-1 text-blue-600">
+          獲得予定：約{point.toLocaleString()}pt
+         </p>
+
+         <p className="text-sm text-gray-500">
+          終了：
+          {item.Item.pointRateEndTime || "通常ポイント"}
+         </p>
+
+         <p className="mt-1 text-2xl font-bold text-green-600">
+          実質価格：¥{realPrice.toLocaleString()}
+         </p>
         </div>
         <a
          href={item.Item.itemUrl}
