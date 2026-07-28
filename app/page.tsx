@@ -17,7 +17,7 @@ export default function Home() {
 
   const data = await res.json();
 
-   console.log(data);
+   alert(JSON.stringify(data.Items?.[0], null, 2));
 
   const sortedItems = [...(data.Items ?? [])].sort((a, b) => {
   const pointA = Math.floor(
