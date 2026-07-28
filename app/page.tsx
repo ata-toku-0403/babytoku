@@ -101,7 +101,9 @@ export default function Home() {
             ¥{cheapest.Item.itemPrice.toLocaleString()}
           </div>
         <p className="mt-1 text-orange-600 font-bold">
-        🔥 ポイント {cheapest.Item.pointRate}倍
+         {cheapest.Item.pointRate > 1
+         ? `🔥 ポイント${cheapest.Item.pointRate}倍`
+         : "🟢通常ポイント"}
         </p>
 
         <p className="mt-1 text-blue-600">
@@ -115,7 +117,9 @@ export default function Home() {
 
         <p className="text-sm text-gray-500">
          終了：
-         {cheapest.Item.pointRateEndTime || "通常ポイント"}
+         {cheapest.Item.pointRateEndTime === "9999-12-31 23:59"
+         ? "通常ポイント"
+         : cheapest.item.Item.pointRateEndTime}
         </p>
 
          <p className="mt-2 text-3xl font-bold text-green-600">
@@ -179,7 +183,9 @@ export default function Home() {
          </p>
 
          <p className="mt-1 text-orange-600 font-bold">
-          🔥 ポイント {item.Item.pointRate}倍
+          {item.Item.pointRate > 1
+          ? `🔥 ポイント${item.Item.pointRate}倍`
+          : "🟢通常ポイント"}
          </p>
 
          <p className="mt-1 text-blue-600">
@@ -188,7 +194,9 @@ export default function Home() {
 
          <p className="text-sm text-gray-500">
           終了：
-          {item.Item.pointRateEndTime || "通常ポイント"}
+          {item.Item.pointRateEndTime === "9999-12-31 23:59"
+          ? "通常ポイント"
+          : item.Item.pointRateEndTime}
          </p>
 
          <p className="mt-1 text-2xl font-bold text-green-600">
