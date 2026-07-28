@@ -115,9 +115,10 @@ export default function Home() {
 
        <p className="text-sm text-gray-500">
         終了：
-        {cheapest.Item.pointRateEndTime === "9999-12-31 23:59"
-        ? "通常ポイント"
-        : cheapest.Item.pointRateEndTime}
+        {!cheapest.Item.pointRateEndTime ||
+         cheapest.Item.pointRateEndTime === "9999-12-31 23:59"
+         ? "通常ポイント"
+         : cheapest.Item.pointRateEndTime}
        </p>
 
          <p className="mt-2 text-3xl font-bold text-green-600">
@@ -192,9 +193,10 @@ export default function Home() {
 
          <p className="text-sm text-gray-500">
           終了：
-          {item.Item.pointRateEndTime === "9999-12-31 23:59"
-          ? "通常ポイント"
-          : item.Item.pointRateEndTime}
+         {!item.Item.pointRateEndTime ||
+         item.Item.pointRateEndTime === "9999-12-31 23:59"
+         ? "通常ポイント"
+         : item.Item.pointRateEndTime}
          </p>
 
          <p className="mt-1 text-2xl font-bold text-green-600">
