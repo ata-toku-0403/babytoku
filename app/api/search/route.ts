@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     `&genreId=0` +
     `&applicationId=${appId}` +
     `&accessKey=${accessKey}`;
-
+    `&fields=pointRate,pointRateStartTime,pointRateEndTime`;
   console.log(url);
 
  const res = await fetch(url, {
