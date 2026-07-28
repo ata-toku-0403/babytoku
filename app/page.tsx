@@ -33,6 +33,7 @@ export default function Home() {
   return realPriceA - realPriceB;
 });
 
+   alert(sortedItems.length);
    setItems(sortedItems);
    setTotalCount(data.count ?? 0);
    };
