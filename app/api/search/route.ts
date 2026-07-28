@@ -8,13 +8,12 @@ export async function GET(request: Request) {
   const accessKey = process.env.RAKUTEN_ACCESS_KEY;
 
   const url =
-    `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701` +
-    `?format=json` +
-    `&keyword=${encodeURIComponent(keyword ?? "")}` +
-    `&genreId=0` +
-    `&applicationId=${appId}` +
-    `&accessKey=${accessKey}`;
-    `&fields=pointRate,pointRateStartTime,pointRateEndTime`;
+  `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701` +
+  `?format=json` +
+  `&keyword=${encodeURIComponent(keyword ?? "")}` +
+  `&genreId=0` +
+  `&applicationId=${appId}` +
+  `&accessKey=${accessKey}`;
   console.log(url);
 
  const res = await fetch(url, {
