@@ -17,8 +17,6 @@ export default function Home() {
 
   const data = await res.json();
 
-   alert(JSON.stringify(data.Items?.[0], null, 2));
-
   const sortedItems = [...(data.Items ?? [])].sort((a, b) => {
   const pointA = Math.floor(
     a.Item.itemPrice * a.Item.pointRate / 100
@@ -33,7 +31,6 @@ export default function Home() {
   return realPriceA - realPriceB;
 });
 
-   alert(sortedItems.length);
    setItems(sortedItems);
    setTotalCount(data.count ?? 0);
    };
@@ -116,12 +113,12 @@ export default function Home() {
          pt
         </p>
 
-        <p className="text-sm text-gray-500">
-         終了：
-         {cheapest.Item.pointRateEndTime === "9999-12-31 23:59"
-         ? "通常ポイント"
-         : cheapest.item.Item.pointRateEndTime}
-        </p>
+       <p className="text-sm text-gray-500">
+        終了：
+        {cheapest.Item.pointRateEndTime === "9999-12-31 23:59"
+        ? "通常ポイント"
+        : cheapest.Item.pointRateEndTime}
+       </p>
 
          <p className="mt-2 text-3xl font-bold text-green-600">
            実質価格：
