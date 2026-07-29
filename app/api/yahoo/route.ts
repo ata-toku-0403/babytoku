@@ -10,8 +10,6 @@ export async function GET(request: Request) {
     `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch` +
     `?appid=${appId}` +
     `&query=${encodeURIComponent(keyword ?? "")}` +
-    `&results=20` +
-    `&sort=+price`;
 
   console.log(url);
 
