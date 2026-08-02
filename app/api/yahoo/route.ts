@@ -9,19 +9,15 @@ export async function GET(request: Request) {
   const url =
     `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch` +
     `?appid=${appId}` +
-    `&query=${encodeURIComponent(keyword ?? "")}` +
+    `&query=${encodeURIComponent(keyword ?? "")}`;
 
-  console.log(url);
+  const res = await fetch(url);
 
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-    },
+  const text = await res.text();
+
+  return NextResponse.json({
+    status: res.status,
+    body: text,
+    url,
   });
-
-  const data = await res.json();
-
-  console.log(data);
-
-  return NextResponse.json(data);
 }
