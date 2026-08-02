@@ -2,30 +2,45 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const keyword = searchParams.get("keyword");
+  const keyword = searchParams.get("keyword") ?? "";
 
-  const appId = process.env.RAKUTEN_APP_ID;
-  const accessKey = process.env.RAKUTEN_ACCESS_KEY;
+  // 楽天API
+  const rakutenAppId = process.env.RAKUTEN_APP_ID;
+  const rakutenAccessKey = process.env.RAKUTEN_ACCESS_KEY;
 
-  const url =
-  `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701` +
-  `?format=json` +
-  `&keyword=${encodeURIComponent(keyword ?? "")}` +
-  `&genreId=0` +
-  `&applicationId=${appId}` +
-  `&accessKey=${accessKey}`;
-  console.log(url);
+  const rakutenUrl =
+    `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701` +
+    `?format=json` +
+    `&keyword=${encodeURIComponent(keyword)}` +
+    `&genreId=0` +
+    `&applicationId=${rakutenAppId}` +
+    `&accessKey=${rakutenAccessKey}`;
 
- const res = await fetch(url, {
-  headers: {
-    Accept: "application/json",
-    Origin: "https://babytoku.vercel.app",
-  },
-});
+  const rakutenRes = await fetch(rakutenUrl, {
+    headers: {
+      Accept: "application/json",
+      Origin: "https://babytoku.vercel.app",
+    },
+  });
 
-  const data = await res.json();
+  const rakutenData = await rakutenRes.json();
 
-  console.log(data);
 
-  return NextResponse.json(data);
+  // Yahoo API
+  const yahooClientId = process.env.YAHOO_CLIENT_ID;
+
+  const yahooUrl =
+    `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch` +
+    `?appid=${yahooClientId}` +
+    `&query=${encodeURIComponent(keyword)}`;
+
+  const yahooRes = await fetch(yahooUrl);
+
+  const yahooData = await yahooRes.json();
+
+
+  return NextResponse.json({
+    rakuten: rakutenData,
+    yahoo: yahooData,
+  });
 }

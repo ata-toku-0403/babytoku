@@ -17,7 +17,29 @@ export default function Home() {
 
   const data = await res.json();
 
-  const sortedItems = [...(data.Items ?? [])].sort((a, b) => {
+  const yahooItems = data.body
+  ? JSON.parse(data.body).hits
+  : [];
+
+  const sortedItems = yahooItems.map((item:any)=>({
+   Item:{
+    itemName:item.name,
+    itemPrice:item.price,
+    itemUrl:item.url,
+    mediumImageUrls:[
+      {
+        imageUrl:item.image.medium
+      }
+    ],
+    pointRate:
+      item.point.lyLimitedBonusAmount
+        ? Math.floor(
+            item.point.lyLimitedBonusAmount /
+            item.price * 100
+          )
+        : 0
+  }
+}));
   const pointA = Math.floor(
     a.Item.itemPrice * a.Item.pointRate / 100
   );
