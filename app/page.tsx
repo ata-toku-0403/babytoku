@@ -8,54 +8,75 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
-  const search = async () => {
-   setSearchWord(keyword);
+const search = async () => {
+  setSearchWord(keyword);
 
   const res = await fetch(
     `/api/search?keyword=${encodeURIComponent(keyword)}`
-    );
+  );
 
   const data = await res.json();
 
-  const yahooItems = data.body
-  ? JSON.parse(data.body).hits
-  : [];
+  const rakutenItems = (data.rakuten?.Items ?? []).map((item:any) => ({
+    Item: {
+      itemName: item.Item.itemName,
+      itemPrice: item.Item.itemPrice,
+      itemUrl: item.Item.itemUrl,
+      mediumImageUrls: item.Item.mediumImageUrls,
+      pointRate: item.Item.pointRate ?? 1,
+      shop: "楽天"
+    }
+  }));
 
-  const sortedItems = yahooItems.map((item:any)=>({
-   Item:{
-    itemName:item.name,
-    itemPrice:item.price,
-    itemUrl:item.url,
-    mediumImageUrls:[
-      {
-        imageUrl:item.image.medium
-      }
-    ],
-    pointRate:
-      item.point.lyLimitedBonusAmount
-        ? Math.floor(
-            item.point.lyLimitedBonusAmount /
-            item.price * 100
-          )
-        : 0
-  }
-}));
-  const pointA = Math.floor(
-    a.Item.itemPrice * a.Item.pointRate / 100
-  );
-  const pointB = Math.floor(
-    b.Item.itemPrice * b.Item.pointRate / 100
-  );
 
-  const realPriceA = a.Item.itemPrice - pointA;
-  const realPriceB = b.Item.itemPrice - pointB;
+  const yahooItems = (data.yahoo?.hits ?? []).map((item:any) => ({
+    Item: {
+      itemName: item.name,
+      itemPrice: item.price,
+      itemUrl: item.url,
+      mediumImageUrls: [
+        {
+          imageUrl: item.image.medium
+        }
+      ],
+      pointRate:
+        item.point?.lyLimitedBonusAmount
+          ? Math.floor(
+              item.point.lyLimitedBonusAmount /
+              item.price * 100
+            )
+          : 1,
+      shop: "Yahoo"
+    }
+  }));
 
-  return realPriceA - realPriceB;
-});
 
-   setItems(sortedItems);
-   setTotalCount(data.count ?? 0);
-   };
+  const sortedItems = [
+    ...rakutenItems,
+    ...yahooItems
+  ].sort((a:any,b:any)=>{
+
+    const realPriceA =
+      a.Item.itemPrice -
+      Math.floor(
+        a.Item.itemPrice *
+        a.Item.pointRate / 100
+      );
+
+    const realPriceB =
+      b.Item.itemPrice -
+      Math.floor(
+        b.Item.itemPrice *
+        b.Item.pointRate / 100
+      );
+
+    return realPriceA - realPriceB;
+  });
+
+
+  setItems(sortedItems);
+  setTotalCount(sortedItems.length);
+};
 
   const cheapest = useMemo(() => {
     if (items.length === 0) return null;
