@@ -122,7 +122,7 @@ const search = async () => {
     {cheapest && (
      <div className="mb-8 rounded-2xl border-2 border-yellow-400 bg-yellow-50 p-5 shadow">
       <div className="mb-3 text-lg font-bold text-yellow-700">
-       🏆 楽天最安値
+       🏆 実質最安値
       </div>
 
       <div className="flex gap-4">
@@ -182,7 +182,7 @@ const search = async () => {
           rel="noopener noreferrer"
           className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
         >
-          楽天で見る
+          {cheapest.Item.shop}で見る
         </a>
       </div>
     </div>
@@ -252,7 +252,7 @@ const search = async () => {
          rel="noopener noreferrer"
          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
          >
-         楽天で見る
+         {cheapest.Item.shop}で見る
         </a>
       </div>
      </li>
