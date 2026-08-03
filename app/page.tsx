@@ -47,7 +47,7 @@ function getWeight(name:string) {
        ),
 
       weight:
-      getWeight(item.Item.itemName)
+      getWeight(item.Item.itemName),
       
       shop: "楽天"
     }
@@ -252,16 +252,17 @@ function getWeight(name:string) {
          </p>
 
          <p className="mt-1 text-2xl font-bold text-green-600">
-          実質価格：¥{realPrice.toLocaleString()}
+           実質価格：¥{realPrice.toLocaleString()}
+         </p>
+
           {item.Item.weight && (
           <p className="mt-1 text-purple-600 font-bold">
-          1gあたり：
-          ¥{(
-          realPrice / item.Item.weight
-          ).toFixed(2)}
-         </p>
-         )}
-         </p>
+           1gあたり
+           ¥{(
+           realPrice / item.Item.weight
+           ).toFixed(2)}
+          </p>
+           )}
         </div>
         <a
          href={item.Item.itemUrl}
