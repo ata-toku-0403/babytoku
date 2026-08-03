@@ -24,6 +24,13 @@ const search = async () => {
       itemUrl: item.Item.itemUrl,
       mediumImageUrls: item.Item.mediumImageUrls,
       pointRate: item.Item.pointRate ?? 1,
+
+      pointAmount:
+      Math.floor(
+       item.Item.itemPrice *
+       (item.Item.pointRate ?? 1) / 100
+       ),
+
       shop: "楽天"
     }
   }));
@@ -39,13 +46,11 @@ const search = async () => {
           imageUrl: item.image.medium
         }
       ],
-      pointRate:
-        item.point?.lyLimitedBonusAmount
-          ? Math.floor(
-              item.point.lyLimitedBonusAmount /
-              item.price * 100
-            )
-          : 1,
+      pointRate: 0,
+
+      pointAmount:
+       item.point?.lyLimitedBonusAmount ?? 0,
+
       shop: "Yahoo"
     }
   }));
@@ -55,22 +60,16 @@ const search = async () => {
     ...rakutenItems,
     ...yahooItems
   ].sort((a:any,b:any)=>{
+  
+  const realPriceA =
+   a.Item.itemPrice -
+   a.Item.pointAmount;
 
-    const realPriceA =
-      a.Item.itemPrice -
-      Math.floor(
-        a.Item.itemPrice *
-        a.Item.pointRate / 100
-      );
+  const realPriceB =
+   b.Item.itemPrice -
+   b.Item.pointAmount;
 
-    const realPriceB =
-      b.Item.itemPrice -
-      Math.floor(
-        b.Item.itemPrice *
-        b.Item.pointRate / 100
-      );
-
-    return realPriceA - realPriceB;
+  return realPriceA - realPriceB;
   });
 
 
@@ -149,11 +148,7 @@ const search = async () => {
 
         <p className="mt-1 text-blue-600">
          獲得予定：約
-         {Math.floor(
-         cheapest.Item.itemPrice *
-         cheapest.Item.pointRate / 100
-         ).toLocaleString()}
-         pt
+         {cheapest.Item.pointAmount.toLocaleString()}pt
         </p>
 
        <p className="text-sm text-gray-500">
@@ -165,14 +160,11 @@ const search = async () => {
        </p>
 
          <p className="mt-2 text-3xl font-bold text-green-600">
-           実質価格：
-           ¥{(
+         実質価格：
+          ¥{(
            cheapest.Item.itemPrice -
-           Math.floor(
-           cheapest.Item.itemPrice *
-           cheapest.Item.pointRate / 100
-           )
-          ).toLocaleString()}
+           cheapest.Item.pointAmount
+           ).toLocaleString()}
          </p>
         </div>
 
@@ -194,14 +186,10 @@ const search = async () => {
    <ul className="mt-6 w-full max-w-2xl space-y-4">
     {items.map((item: any, index) => {
 
-     const point =
-      Math.floor(
-       item.Item.itemPrice *
-       item.Item.pointRate / 100
-      );
+     const point = item.Item.pointAmount;
 
      const realPrice =
-       item.Item.itemPrice - point;
+      item.Item.itemPrice - point;
 
   return (
      <li
