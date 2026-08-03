@@ -8,7 +8,22 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
-const search = async () => {
+function getWeight(name:string) {
+  const match = name.match(/(\d+(?:\.\d+)?)\s*(g|kg)/i);
+
+  if (!match) return null;
+
+  const value = Number(match[1]);
+  const unit = match[2].toLowerCase();
+
+  if (unit === "kg") {
+    return value * 1000;
+  }
+
+  return value;
+}
+
+  const search = async () => {
   setSearchWord(keyword);
 
   const res = await fetch(
@@ -31,6 +46,9 @@ const search = async () => {
        (item.Item.pointRate ?? 1) / 100
        ),
 
+      weight:
+      getWeight(item.Item.itemName)
+      
       shop: "楽天"
     }
   }));
@@ -50,6 +68,9 @@ const search = async () => {
 
       pointAmount:
        item.point?.lyLimitedBonusAmount ?? 0,
+
+       weight:
+       getWeight(item.name),
 
       shop: "Yahoo"
     }
@@ -232,6 +253,14 @@ const search = async () => {
 
          <p className="mt-1 text-2xl font-bold text-green-600">
           実質価格：¥{realPrice.toLocaleString()}
+          {item.Item.weight && (
+          <p className="mt-1 text-purple-600 font-bold">
+          1gあたり：
+          ¥{(
+          realPrice / item.Item.weight
+          ).toFixed(2)}
+         </p>
+         )}
          </p>
         </div>
         <a
