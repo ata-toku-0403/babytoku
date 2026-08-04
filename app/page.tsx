@@ -80,18 +80,28 @@ function getWeight(name:string) {
   const sortedItems = [
     ...rakutenItems,
     ...yahooItems
-  ].sort((a:any,b:any)=>{
-  
+   ].sort((a:any,b:any)=>{
+
   const realPriceA =
-   a.Item.itemPrice -
-   a.Item.pointAmount;
+    a.Item.itemPrice -
+    a.Item.pointAmount;
 
   const realPriceB =
-   b.Item.itemPrice -
-   b.Item.pointAmount;
+    b.Item.itemPrice -
+    b.Item.pointAmount;
 
-  return realPriceA - realPriceB;
-  });
+  const gramPriceA =
+    a.Item.weight
+      ? realPriceA / a.Item.weight
+      : Number.MAX_SAFE_INTEGER;
+
+  const gramPriceB =
+    b.Item.weight
+      ? realPriceB / b.Item.weight
+      : Number.MAX_SAFE_INTEGER;
+
+  return gramPriceA - gramPriceB;
+});
 
 
   setItems(sortedItems);
@@ -187,6 +197,17 @@ function getWeight(name:string) {
            cheapest.Item.pointAmount
            ).toLocaleString()}
          </p>
+         {cheapest.Item.weight && (
+          <p className="mt-2 text-purple-600 font-bold">
+          1gあたり
+          ¥{(
+           (
+            cheapest.Item.itemPrice -
+            cheapest.Item.pointAmount
+           ) / cheapest.Item.weight
+           ).toFixed(2)}
+          </p>
+         )}
         </div>
 
         <a
