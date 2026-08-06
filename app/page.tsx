@@ -199,7 +199,7 @@ function getWeight(name:string) {
          </p>
          {cheapest.Item.weight && (
           <p className="mt-2 text-purple-600 font-bold">
-          1gあたり
+          単価：
           ¥{(
            (
             cheapest.Item.itemPrice -
@@ -278,7 +278,7 @@ function getWeight(name:string) {
 
           {item.Item.weight && (
           <p className="mt-1 text-purple-600 font-bold">
-           1gあたり
+           単価：
            ¥{(
            realPrice / item.Item.weight
            ).toFixed(2)}
