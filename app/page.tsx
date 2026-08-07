@@ -75,7 +75,10 @@ function getWeight(name: string) {
       weight:
       getWeight(item.Item.itemName),
       
-      shop: "楽天"
+      shop: "楽天",
+       shipping: item.Item.postageFlag === 0
+       ? "送料無料"
+       : "送料別途",
     }
   }));
 
@@ -98,7 +101,10 @@ function getWeight(name: string) {
        weight:
        getWeight(item.name),
 
-      shop: "Yahoo"
+      shop: "Yahoo",
+       shipping: item.shipping?.name === "送料無料"
+       ? "送料無料"
+       : "送料別途",
     }
   }));
 
@@ -215,6 +221,12 @@ function getWeight(name: string) {
          ? "通常ポイント"
          : cheapest.Item.pointRateEndTime}
        </p>
+ 
+       <p className="text-sm font-bold">
+        {cheapest.Item.shipping === "送料無料"
+        ? "🟢 送料無料"
+        : "🔴 送料別途"}
+       </p>
 
          <p className="mt-2 text-3xl font-bold text-green-600">
          実質価格：
@@ -296,6 +308,11 @@ function getWeight(name: string) {
          item.Item.pointRateEndTime === "9999-12-31 23:59"
          ? "通常ポイント"
          : item.Item.pointRateEndTime}
+         </p>
+         <p className="text-sm font-bold">
+          {item.Item.shipping === "送料無料"
+          ? "🟢 送料無料"
+          : "🔴 送料別途"}
          </p>
 
          <p className="mt-1 text-2xl font-bold text-green-600">
