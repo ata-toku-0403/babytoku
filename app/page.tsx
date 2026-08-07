@@ -8,13 +8,28 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
-function getWeight(name:string) {
-  const match = name.match(/(\d+(?:\.\d+)?)\s*(g|kg)/i);
+function getWeight(name: string) {
+  // 紙おむつ：最後の「○枚」を優先
+  const diaperMatch = name.match(/(\d+)\s*枚\)?\s*$/);
 
-  if (!match) return null;
+  if (diaperMatch) {
+    return Number(diaperMatch[1]);
+  }
 
-  const value = Number(match[1]);
-  const unit = match[2].toLowerCase();
+  // 紙おむつ：「44枚×3個」のような表記
+  const packMatch = name.match(/(\d+)\s*枚\s*[×x＊*]\s*(\d+)/i);
+
+  if (packMatch) {
+    return Number(packMatch[1]) * Number(packMatch[2]);
+  }
+
+  // 粉ミルクなど：g / kg
+  const weightMatch = name.match(/(\d+(?:\.\d+)?)\s*(g|kg)/i);
+
+  if (!weightMatch) return null;
+
+  const value = Number(weightMatch[1]);
+  const unit = weightMatch[2].toLowerCase();
 
   if (unit === "kg") {
     return value * 1000;
@@ -216,7 +231,7 @@ function getWeight(name:string) {
           rel="noopener noreferrer"
           className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
         >
-          {cheapest.Item.shop}で見る
+          {cheapest.Item.shop}へ移動
         </a>
       </div>
     </div>
@@ -291,7 +306,7 @@ function getWeight(name:string) {
          rel="noopener noreferrer"
          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
          >
-         {item.Item.shop}で見る
+         {item.Item.shop}へ移動
         </a>
       </div>
      </li>
