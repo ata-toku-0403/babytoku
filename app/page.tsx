@@ -9,22 +9,33 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0);
 
 function getWeight(name: string) {
-  // 紙おむつ：最後の「○枚」を優先
-  const diaperMatch = name.match(/(\d+)\s*枚\)?\s*$/);
+  // 「132枚」のような合計枚数が書かれている場合
+  const totalDiaperMatch = name.match(/\((\d+)\s*枚\)/);
 
-  if (diaperMatch) {
-    return Number(diaperMatch[1]);
+  if (totalDiaperMatch) {
+    return Number(totalDiaperMatch[1]);
   }
 
-  // 紙おむつ：「44枚×3個」のような表記
-  const packMatch = name.match(/(\d+)\s*枚\s*[×x＊*]\s*(\d+)/i);
+  // 「68枚入り×4個」「68枚×4個」など
+  const packMatch = name.match(
+    /(\d+)\s*枚(?:入り)?\s*[×x＊*]\s*(\d+)\s*(?:個|パック|袋|ケース)?/i
+  );
 
   if (packMatch) {
     return Number(packMatch[1]) * Number(packMatch[2]);
   }
 
-  // 粉ミルクなど：g / kg
-  const weightMatch = name.match(/(\d+(?:\.\d+)?)\s*(g|kg)/i);
+  // 「68枚入り」など単品
+  const diaperMatch = name.match(/(\d+)\s*枚/);
+
+  if (diaperMatch) {
+    return Number(diaperMatch[1]);
+  }
+
+  // 粉ミルクなどの重量
+  const weightMatch = name.match(
+    /(\d+(?:\.\d+)?)\s*(g|kg)/i
+  );
 
   if (!weightMatch) return null;
 
