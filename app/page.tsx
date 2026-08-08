@@ -203,10 +203,11 @@ function getWeight(name: string) {
           <div className="mt-2 text-3xl font-bold text-red-600">
             ¥{cheapest.Item.itemPrice.toLocaleString()}
           </div>
-        <p className="mt-1 text-orange-600 font-bold">
-         {cheapest.Item.pointRate > 1
-         🔥 ポイント${cheapest.Item.pointRate}倍`
-        </p>
+        {cheapest.Item.pointRate > 1 && (
+         <p className="mt-1 text-orange-600 font-bold">
+          🔥 ポイント{cheapest.Item.pointRate}倍
+         </p>
+        )}
 
         <p className="mt-1 text-blue-600">
          獲得予定：約
@@ -283,10 +284,11 @@ function getWeight(name: string) {
           ¥{item.Item.itemPrice.toLocaleString()}
          </p>
 
-         <p className="mt-1 text-orange-600 font-bold">
-          {item.Item.pointRate > 1
-          🔥 ポイント${item.Item.pointRate}倍`
-         </p>
+         {item.Item.pointRate > 1 && (
+          <p className="mt-1 text-orange-600 font-bold">
+           🔥 ポイント{item.Item.pointRate}倍
+          </p>
+         )}
 
          <p className="mt-1 text-blue-600">
           獲得予定：約{point.toLocaleString()}pt
