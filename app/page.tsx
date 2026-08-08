@@ -206,21 +206,12 @@ function getWeight(name: string) {
         <p className="mt-1 text-orange-600 font-bold">
          {cheapest.Item.pointRate > 1
          ? `🔥 ポイント${cheapest.Item.pointRate}倍`
-         : "🟢通常ポイント"}
         </p>
 
         <p className="mt-1 text-blue-600">
          獲得予定：約
          {cheapest.Item.pointAmount.toLocaleString()}pt
         </p>
-
-       <p className="text-sm text-gray-500">
-        終了：
-        {!cheapest.Item.pointRateEndTime ||
-         cheapest.Item.pointRateEndTime === "9999-12-31 23:59"
-         ? "通常ポイント"
-         : cheapest.Item.pointRateEndTime}
-       </p>
  
        <p className="text-sm font-bold">
         {cheapest.Item.shipping === "送料無料"
@@ -295,20 +286,12 @@ function getWeight(name: string) {
          <p className="mt-1 text-orange-600 font-bold">
           {item.Item.pointRate > 1
           ? `🔥 ポイント${item.Item.pointRate}倍`
-          : "🟢通常ポイント"}
          </p>
 
          <p className="mt-1 text-blue-600">
           獲得予定：約{point.toLocaleString()}pt
          </p>
 
-         <p className="text-sm text-gray-500">
-          終了：
-         {!item.Item.pointRateEndTime ||
-         item.Item.pointRateEndTime === "9999-12-31 23:59"
-         ? "通常ポイント"
-         : item.Item.pointRateEndTime}
-         </p>
          <p className="text-sm font-bold">
           {item.Item.shipping === "送料無料"
           ? "🟢 送料無料"
