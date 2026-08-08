@@ -205,7 +205,7 @@ function getWeight(name: string) {
           </div>
         <p className="mt-1 text-orange-600 font-bold">
          {cheapest.Item.pointRate > 1
-         ? `🔥 ポイント${cheapest.Item.pointRate}倍`
+         🔥 ポイント${cheapest.Item.pointRate}倍`
         </p>
 
         <p className="mt-1 text-blue-600">
@@ -285,7 +285,7 @@ function getWeight(name: string) {
 
          <p className="mt-1 text-orange-600 font-bold">
           {item.Item.pointRate > 1
-          ? `🔥 ポイント${item.Item.pointRate}倍`
+          🔥 ポイント${item.Item.pointRate}倍`
          </p>
 
          <p className="mt-1 text-blue-600">
