@@ -146,8 +146,8 @@ function getWeight(name: string) {
     return items[0];
     }, [items]);
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="flex w-full flex-col items-center justify-between bg-white py-8 sm:py-16 sm:items-start">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
             ベビトクー仮ー
@@ -187,7 +187,7 @@ function getWeight(name: string) {
        🏆 実質最安値
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
        <img
          src={cheapest.Item.mediumImageUrls?.[0]?.imageUrl}
          alt={cheapest.Item.itemName}
@@ -196,7 +196,7 @@ function getWeight(name: string) {
 
       <div className="flex flex-1 flex-col justify-between">
         <div>
-          <div className="font-bold">
+          <div className="text-lg font-bold leading-relaxed text-gray-900 sm:text-xl">
             {cheapest.Item.itemName}
           </div>
 
@@ -220,7 +220,7 @@ function getWeight(name: string) {
         : "🔴 送料別途"}
        </p>
 
-         <p className="mt-2 text-3xl font-bold text-green-600">
+         <p className="mt-4 rounded-lg bg-green-50 px-4 py-3 text-2xl font-bold text-green-700 sm:text-3xl">
          実質価格：
           ¥{(
            cheapest.Item.itemPrice -
@@ -228,7 +228,7 @@ function getWeight(name: string) {
            ).toLocaleString()}
          </p>
          {cheapest.Item.weight && (
-          <p className="mt-2 text-purple-600 font-bold">
+          <p className="mt-2 text-base font-bold text-purple-700">
           単価：
           ¥{(
            (
@@ -244,7 +244,7 @@ function getWeight(name: string) {
           href={cheapest.Item.itemUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
+          className="mt-5 block w-full rounded-lg bg-yellow-500 px-5 py-3 text-center text-base font-bold text-white hover:bg-yellow-600 sm:w-auto"
         >
           {cheapest.Item.shop}へ移動
         </a>
@@ -271,7 +271,7 @@ function getWeight(name: string) {
       <img
         src={item.Item.mediumImageUrls?.[0]?.imageUrl}
         alt={item.Item.itemName}
-        className="h-28 w-28 rounded object-contain"
+        className="mx-auto h-40 w-40 rounded-lg object-contain sm:mx-0 sm:h-32 sm:w-32"
       />
 
       <div className="flex flex-1 flex-col justify-between">
@@ -280,21 +280,21 @@ function getWeight(name: string) {
           {item.Item.itemName}
          </h3>
 
-         <p className="mt-2 text-2xl font-bold text-red-600">
+         <p className="mt-3 text-2xl font-bold text-red-600 sm:text-3xl">
           ¥{item.Item.itemPrice.toLocaleString()}
          </p>
 
          {item.Item.pointRate > 1 && (
-          <p className="mt-1 text-orange-600 font-bold">
+          <p className="mt-2 text-base font-bold text-orange-700">
            🔥 ポイント{item.Item.pointRate}倍
           </p>
          )}
 
-         <p className="mt-1 text-blue-600">
+         <p className="mt-2 text-base font-semibold text-blue-700">
           獲得予定：約{point.toLocaleString()}pt
          </p>
 
-         <p className="text-sm font-bold">
+         <p className="mt-2 text-base font-bold text-gray-800">
           {item.Item.shipping === "送料無料"
           ? "🟢 送料無料"
           : "🔴 送料別途"}
