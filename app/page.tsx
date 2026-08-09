@@ -146,8 +146,7 @@ function getWeight(name: string) {
     return items[0];
     }, [items]);
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-  <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
       <main className="flex w-full flex-col items-center justify-between bg-white py-8 sm:py-16 sm:items-start">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
