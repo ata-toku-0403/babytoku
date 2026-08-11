@@ -1,5 +1,3 @@
-"use client";
-
 import { useMemo, useState } from "react";
 
 export default function Home() {
@@ -8,7 +6,6 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
-  // 商品名から内容量・枚数を取得
   function getWeight(name: string) {
     // 「68枚入り×4個」「68枚×4個」など
     const packMatch = name.match(
@@ -20,13 +17,13 @@ export default function Home() {
     }
 
     // 「132枚」「68枚入り」など
-    const diaperMatch = name.match(/(\d+)\s*枚/);
+    const diaperMatch = name.match(/(\d+)\s*枚/i);
 
     if (diaperMatch) {
       return Number(diaperMatch[1]);
     }
 
-    // 「800g」「1.2kg」など
+    // 粉ミルクなどの重量
     const weightMatch = name.match(
       /(\d+(?:\.\d+)?)\s*(g|kg)/i
     );
@@ -54,7 +51,6 @@ export default function Home() {
 
     const data = await res.json();
 
-    // 楽天
     const rakutenItems = (data.rakuten?.Items ?? []).map(
       (item: any) => ({
         Item: {
@@ -62,7 +58,6 @@ export default function Home() {
           itemPrice: item.Item.itemPrice,
           itemUrl: item.Item.itemUrl,
           mediumImageUrls: item.Item.mediumImageUrls,
-
           pointRate: item.Item.pointRate ?? 1,
 
           pointAmount: Math.floor(
@@ -83,7 +78,6 @@ export default function Home() {
       })
     );
 
-    // Yahoo
     const yahooItems = (data.yahoo?.hits ?? []).map(
       (item: any) => ({
         Item: {
@@ -114,251 +108,291 @@ export default function Home() {
       })
     );
 
-    // 楽天＋Yahooをまとめて
-    // 単価の安い順に並べる
     const sortedItems = [
       ...rakutenItems,
       ...yahooItems,
     ].sort((a: any, b: any) => {
       const realPriceA =
-        a.Item.itemPrice - a.Item.pointAmount;
+        a.Item.itemPrice -
+        a.Item.pointAmount;
 
       const realPriceB =
-        b.Item.itemPrice - b.Item.pointAmount;
+        b.Item.itemPrice -
+        b.Item.pointAmount;
 
-      const unitPriceA = a.Item.weight
+      const gramPriceA = a.Item.weight
         ? realPriceA / a.Item.weight
         : Number.MAX_SAFE_INTEGER;
 
-      const unitPriceB = b.Item.weight
+      const gramPriceB = b.Item.weight
         ? realPriceB / b.Item.weight
         : Number.MAX_SAFE_INTEGER;
 
-      return unitPriceA - unitPriceB;
+      return gramPriceA - gramPriceB;
     });
 
     setItems(sortedItems);
     setTotalCount(sortedItems.length);
   };
 
-  // 単価ベースで最安の商品
   const cheapest = useMemo(() => {
     if (items.length === 0) return null;
 
     return items[0];
   }, [items]);
 
+  // AmazonアソシエイトのトラッキングID
+  // .env.local / Vercel の環境変数から取得
+  const amazonAssociateId =
+    process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_ID;
+
+  // 検索したキーワードをAmazonで検索するリンク
+  const amazonSearchUrl =
+    searchWord && amazonAssociateId
+      ? `https://www.amazon.co.jp/s?k=${encodeURIComponent(
+          searchWord
+        )}&tag=${encodeURIComponent(
+          amazonAssociateId
+        )}`
+      : "";
+
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 text-gray-900 dark:bg-gray-950 dark:text-gray-100 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-5xl">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
 
-        {/* ヘッダー */}
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold sm:text-4xl">
-            ベビトクー仮ー
-          </h1>
+      {/* タイトル */}
+      <h1 className="text-3xl font-bold">
+        ベビトクー仮ー
+      </h1>
 
-          <p className="mt-2 text-gray-700 dark:text-gray-300">
-            子育て世代のおトクを増やす。
-          </p>
-        </header>
+      <p className="mt-2 text-gray-600">
+        子育て世代のおトクを増やす。
+      </p>
 
-        {/* 検索 */}
-        <div className="mb-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <input
-            type="text"
-            placeholder="商品名を入力（例：はぐくみ）"
-            value={keyword}
-            onChange={(e) =>
-              setKeyword(e.target.value)
+      {/* 検索 */}
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+
+        <input
+          type="text"
+          placeholder="商品名を入力（例：はぐくみ）"
+          value={keyword}
+          onChange={(e) =>
+            setKeyword(e.target.value)
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              search();
             }
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                search();
-              }
-            }}
-            className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-400"
-          />
+          }}
+          className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"
+        />
 
-          <button
-            onClick={search}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 sm:w-auto"
-          >
-            価格を比較する
-          </button>
-        </div>
+        <button
+          onClick={search}
+          className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+        >
+          価格を比較する
+        </button>
 
-        {/* 検索結果 */}
-        {searchWord && (
-          <div className="mb-6">
-            <h2 className="text-xl font-bold">
-              「{searchWord}」の検索結果
-            </h2>
+      </div>
 
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              {totalCount}件の商品が見つかりました
-            </p>
-          </div>
-        )}
+      {/* 検索結果 */}
+      {searchWord && (
+        <>
 
-        {/* 単価最安値 */}
-        {searchWord && cheapest && (
-          <section className="mb-8 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-6">
-            <h2 className="mb-4 text-lg font-bold">
-              🏆 単価最安値
-            </h2>
+          <p className="mt-6 font-bold">
+            検索中：{searchWord}
+          </p>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <img
-                src={
-                  cheapest.Item.mediumImageUrls?.[0]
-                    ?.imageUrl
-                }
-                alt={cheapest.Item.itemName}
-                className="h-32 w-full rounded object-contain sm:h-32 sm:w-32"
-              />
+          {/* 最安商品 */}
+          {cheapest && (
+            <div className="mt-4 rounded-xl border p-4">
 
-              <div className="flex flex-1 flex-col justify-between">
-                <div>
-                  <div className="font-bold">
-                    {cheapest.Item.itemName}
-                  </div>
+              <div className="flex gap-4">
 
-                  <div className="mt-2 text-2xl font-bold text-red-600 dark:text-red-400 sm:text-3xl">
-                    ¥
-                    {cheapest.Item.itemPrice.toLocaleString()}
-                  </div>
+                <img
+                  src={
+                    cheapest.Item
+                      .mediumImageUrls?.[0]
+                      ?.imageUrl
+                  }
+                  alt={
+                    cheapest.Item.itemName
+                  }
+                  className="h-28 w-28 rounded object-contain"
+                />
 
-                  {cheapest.Item.pointRate > 1 && (
-                    <p className="mt-1 font-bold text-orange-600 dark:text-orange-400">
-                      🔥 ポイント
-                      {cheapest.Item.pointRate}倍
+                <div className="flex flex-1 flex-col justify-between">
+
+                  <div>
+
+                    <div className="font-bold">
+                      {cheapest.Item.itemName}
+                    </div>
+
+                    <div className="mt-2 text-3xl font-bold text-red-600">
+                      ¥
+                      {cheapest.Item.itemPrice.toLocaleString()}
+                    </div>
+
+                    <p className="mt-1 text-orange-600 font-bold">
+                      {cheapest.Item.pointRate > 1
+                        ? `🔥 ポイント${cheapest.Item.pointRate}倍`
+                        : "🟢通常ポイント"}
                     </p>
-                  )}
 
-                  {cheapest.Item.pointAmount > 0 && (
-                    <p className="mt-1 text-blue-600 dark:text-blue-400">
+                    <p className="mt-1 text-blue-600">
                       獲得予定：約
                       {cheapest.Item.pointAmount.toLocaleString()}
                       pt
                     </p>
-                  )}
 
-                  <p className="mt-1 font-bold">
-                    {cheapest.Item.shipping ===
-                    "送料無料"
-                      ? "🟢 送料無料"
-                      : "🔴 送料別途"}
-                  </p>
+                    <p className="text-sm font-bold">
+                      {cheapest.Item.shipping ===
+                      "送料無料"
+                        ? "🟢 送料無料"
+                        : "🔴 送料別途"}
+                    </p>
 
-                  <p className="mt-2 text-2xl font-bold text-green-600 dark:text-green-400">
-                    実質価格：
-                    ¥
-                    {(
-                      cheapest.Item.itemPrice -
-                      cheapest.Item.pointAmount
-                    ).toLocaleString()}
-                  </p>
-
-                  {cheapest.Item.weight && (
-                    <p className="mt-2 font-bold text-purple-600 dark:text-purple-400">
-                      単価：
+                    <p className="mt-2 text-3xl font-bold text-green-600">
+                      実質価格：
                       ¥
                       {(
-                        (cheapest.Item.itemPrice -
-                          cheapest.Item.pointAmount) /
-                        cheapest.Item.weight
-                      ).toFixed(2)}
+                        cheapest.Item.itemPrice -
+                        cheapest.Item.pointAmount
+                      ).toLocaleString()}
                     </p>
-                  )}
+
+                    {cheapest.Item.weight && (
+                      <p className="mt-2 text-purple-600 font-bold">
+                        単価：
+                        ¥
+                        {(
+                          (
+                            cheapest.Item.itemPrice -
+                            cheapest.Item.pointAmount
+                          ) /
+                          cheapest.Item.weight
+                        ).toFixed(2)}
+                      </p>
+                    )}
+
+                  </div>
+
+                  <a
+                    href={
+                      cheapest.Item.itemUrl
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
+                  >
+                    {cheapest.Item.shop}へ移動
+                  </a>
+
                 </div>
 
-                <a
-                  href={cheapest.Item.itemUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 rounded-lg bg-yellow-500 px-4 py-3 text-center font-bold text-white hover:bg-yellow-600"
-                >
-                  {cheapest.Item.shop}へ移動
-                </a>
               </div>
+
             </div>
-          </section>
-        )}
+          )}
 
-        {/* 商品一覧 */}
-        {items.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-xl font-bold">
-              商品一覧
-            </h2>
+          {/* Amazonへのリンク */}
+          {amazonSearchUrl && (
+            <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5">
 
-            <ul className="space-y-4">
-              {items.map((item: any, index: number) => {
+              <p className="text-lg font-bold">
+                Amazonでも探す
+              </p>
+
+              <p className="mt-1 text-sm text-gray-600">
+                「{searchWord}」をAmazonで検索します。
+              </p>
+
+              <a
+                href={amazonSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-white hover:bg-orange-600"
+              >
+                Amazonで「{searchWord}」を探す
+              </a>
+
+            </div>
+          )}
+
+          {/* 商品一覧 */}
+          <ul className="mt-6 space-y-4">
+
+            {items.map(
+              (item: any, index: number) => {
+
                 const point =
                   item.Item.pointAmount;
 
                 const realPrice =
-                  item.Item.itemPrice - point;
+                  item.Item.itemPrice -
+                  point;
 
                 return (
                   <li
-                    key={`${item.Item.shop}-${item.Item.itemUrl}-${index}`}
-                    className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-5"
+                    key={index}
+                    className="rounded-xl border p-4"
                   >
-                    <div className="flex flex-col gap-4 sm:flex-row">
-                      {/* 商品画像 */}
+
+                    <div className="flex gap-4">
+
                       <img
                         src={
-                          item.Item.mediumImageUrls?.[0]
+                          item.Item
+                            .mediumImageUrls?.[0]
                             ?.imageUrl
                         }
-                        alt={item.Item.itemName}
-                        className="h-32 w-full rounded object-contain sm:h-32 sm:w-32"
+                        alt={
+                          item.Item.itemName
+                        }
+                        className="h-28 w-28 rounded object-contain"
                       />
 
-                      {/* 商品情報 */}
                       <div className="flex flex-1 flex-col justify-between">
+
                         <div>
-                          <h3 className="line-clamp-2 text-lg font-bold">
+
+                          <h3 className="text-lg font-bold line-clamp-2">
                             {item.Item.itemName}
                           </h3>
 
-                          <p className="mt-2 text-2xl font-bold text-red-600 dark:text-red-400">
+                          <p className="mt-2 text-2xl font-bold text-red-600">
                             ¥
                             {item.Item.itemPrice.toLocaleString()}
                           </p>
 
-                          {item.Item.pointRate > 1 && (
-                            <p className="mt-1 font-bold text-orange-600 dark:text-orange-400">
-                              🔥 ポイント
-                              {item.Item.pointRate}倍
-                            </p>
-                          )}
+                          <p className="mt-1 text-orange-600 font-bold">
+                            {item.Item.pointRate > 1
+                              ? `🔥 ポイント${item.Item.pointRate}倍`
+                              : "🟢通常ポイント"}
+                          </p>
 
-                          {point > 0 && (
-                            <p className="mt-1 text-blue-600 dark:text-blue-400">
-                              獲得予定：約
-                              {point.toLocaleString()}
-                              pt
-                            </p>
-                          )}
+                          <p className="mt-1 text-blue-600">
+                            獲得予定：約
+                            {point.toLocaleString()}
+                            pt
+                          </p>
 
-                          <p className="mt-1 font-bold">
+                          <p className="text-sm font-bold">
                             {item.Item.shipping ===
                             "送料無料"
                               ? "🟢 送料無料"
                               : "🔴 送料別途"}
                           </p>
 
-                          <p className="mt-2 text-2xl font-bold text-green-600 dark:text-green-400">
+                          <p className="mt-1 text-2xl font-bold text-green-600">
                             実質価格：
                             ¥
                             {realPrice.toLocaleString()}
                           </p>
 
                           {item.Item.weight && (
-                            <p className="mt-1 font-bold text-purple-600 dark:text-purple-400">
+                            <p className="mt-1 text-purple-600 font-bold">
                               単価：
                               ¥
                               {(
@@ -367,34 +401,35 @@ export default function Home() {
                               ).toFixed(2)}
                             </p>
                           )}
+
                         </div>
 
                         <a
-                          href={item.Item.itemUrl}
+                          href={
+                            item.Item.itemUrl
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-3 text-center font-bold text-white hover:bg-red-600"
+                          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
                         >
                           {item.Item.shop}へ移動
                         </a>
+
                       </div>
+
                     </div>
+
                   </li>
                 );
-              })}
-            </ul>
-          </section>
-        )}
+              }
+            )}
 
-        {/* 検索結果なし */}
-        {searchWord && items.length === 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-gray-700 dark:text-gray-300">
-              商品が見つかりませんでした。
-            </p>
-          </div>
-        )}
-      </div>
+          </ul>
+
+        </>
+      )}
+
     </main>
   );
 }
+```
