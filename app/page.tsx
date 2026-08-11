@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 
 export default function Home() {
@@ -142,7 +144,7 @@ export default function Home() {
   }, [items]);
 
   // AmazonアソシエイトのトラッキングID
-  // .env.local / Vercel の環境変数から取得
+  // .env.local / Vercelの環境変数から取得
   const amazonAssociateId =
     process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_ID;
 
@@ -215,9 +217,7 @@ export default function Home() {
                       .mediumImageUrls?.[0]
                       ?.imageUrl
                   }
-                  alt={
-                    cheapest.Item.itemName
-                  }
+                  alt={cheapest.Item.itemName}
                   className="h-28 w-28 rounded object-contain"
                 />
 
@@ -279,9 +279,7 @@ export default function Home() {
                   </div>
 
                   <a
-                    href={
-                      cheapest.Item.itemUrl
-                    }
+                    href={cheapest.Item.itemUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
@@ -347,9 +345,7 @@ export default function Home() {
                             .mediumImageUrls?.[0]
                             ?.imageUrl
                         }
-                        alt={
-                          item.Item.itemName
-                        }
+                        alt={item.Item.itemName}
                         className="h-28 w-28 rounded object-contain"
                       />
 
@@ -405,9 +401,7 @@ export default function Home() {
                         </div>
 
                         <a
-                          href={
-                            item.Item.itemUrl
-                          }
+                          href={item.Item.itemUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
@@ -432,4 +426,3 @@ export default function Home() {
     </main>
   );
 }
-```
