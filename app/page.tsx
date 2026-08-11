@@ -296,26 +296,30 @@ export default function Home() {
 
           {/* Amazonへのリンク */}
           {amazonSearchUrl && (
-            <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5">
+           <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-800 dark:bg-gray-800">
 
-              <p className="text-lg font-bold">
-                Amazonでも探す
-              </p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
+              Amazonでも探す
+             </p>
 
-              <p className="mt-1 text-sm text-gray-600">
-                「{searchWord}」をAmazonで検索します。
-              </p>
+             <p className="mt-1 text-sm text-gray-700 dark:text-gray-200">
+             「{searchWord}」をAmazonで検索します。
+             </p>
 
-              <a
-                href={amazonSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-white hover:bg-orange-600"
-              >
-                Amazonで「{searchWord}」を探す
-              </a>
+             <a href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(
+             searchWord
+             )}&tag=${encodeURIComponent(
+             amazonAssociateId || ""
+             )}`
+             }
+             target="_blank"
+             rel="noopener noreferrer"
+             className="mt-4 block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-white hover:bg-orange-600"
+             >
+            Amazonで「{searchWord}」を探す
+           </a>
 
-            </div>
+          </div>
           )}
 
           {/* 商品一覧 */}
