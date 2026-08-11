@@ -296,7 +296,7 @@ export default function Home() {
 
           {/* Amazonへのリンク */}
           {amazonSearchUrl && (
-           <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-800 dark:bg-gray-800">
+           <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-800 dark:bg-orange-50 p-5">
 
             <p className="text-lg font-bold text-gray-900 dark:text-black">
               Amazonでも探す
