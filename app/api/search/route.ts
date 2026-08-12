@@ -7,6 +7,8 @@ export async function GET(request: Request) {
   // 楽天API
   const rakutenAppId = process.env.RAKUTEN_APP_ID;
   const rakutenAccessKey = process.env.RAKUTEN_ACCESS_KEY;
+  const rakutenAffiliateId = process.env.RAKUTEN_AFFILIATE_ID;
+
 
   const rakutenUrl =
     `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701` +
@@ -14,7 +16,9 @@ export async function GET(request: Request) {
     `&keyword=${encodeURIComponent(keyword)}` +
     `&genreId=0` +
     `&applicationId=${rakutenAppId}` +
-    `&accessKey=${rakutenAccessKey}`;
+    `&accessKey=${rakutenAccessKey}` +
+    `&affiliateId=${rakutenAffiliateId}`
+;
 
   const rakutenRes = await fetch(rakutenUrl, {
     headers: {
