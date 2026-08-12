@@ -53,13 +53,23 @@ export default function Home() {
 
     const data = await res.json();
 
+    // =========================
+    // 楽天
+    // =========================
+
     const rakutenItems = (data.rakuten?.Items ?? []).map(
       (item: any) => ({
         Item: {
           itemName: item.Item.itemName,
           itemPrice: item.Item.itemPrice,
-          itemUrl: item.Item.itemUrl,
+
+          // ★楽天アフィリエイトリンクを使用
+          itemUrl:
+            item.Item.affiliateUrl ||
+            item.Item.itemUrl,
+
           mediumImageUrls: item.Item.mediumImageUrls,
+
           pointRate: item.Item.pointRate ?? 1,
 
           pointAmount: Math.floor(
@@ -80,11 +90,17 @@ export default function Home() {
       })
     );
 
+    // =========================
+    // Yahoo
+    // =========================
+
     const yahooItems = (data.yahoo?.hits ?? []).map(
       (item: any) => ({
         Item: {
           itemName: item.name,
+
           itemPrice: item.price,
+
           itemUrl: item.url,
 
           mediumImageUrls: [
@@ -109,6 +125,10 @@ export default function Home() {
         },
       })
     );
+
+    // =========================
+    // 単価の安い順に並べる
+    // =========================
 
     const sortedItems = [
       ...rakutenItems,
@@ -137,14 +157,20 @@ export default function Home() {
     setTotalCount(sortedItems.length);
   };
 
+  // =========================
+  // 最安商品
+  // =========================
+
   const cheapest = useMemo(() => {
     if (items.length === 0) return null;
 
     return items[0];
   }, [items]);
 
-  // AmazonアソシエイトのトラッキングID
-  // .env.local / Vercelの環境変数から取得
+  // =========================
+  // Amazonアソシエイト
+  // =========================
+
   const amazonAssociateId =
     process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_ID;
 
@@ -162,15 +188,17 @@ export default function Home() {
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
 
       {/* タイトル */}
+
       <h1 className="text-3xl font-bold">
         ベビトクー仮ー
       </h1>
 
-      <p className="mt-2 text-gray-600">
+      <p className="mt-2 text-gray-600 dark:text-gray-300">
         子育て世代のおトクを増やす。
       </p>
 
       {/* 検索 */}
+
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
 
         <input
@@ -185,7 +213,7 @@ export default function Home() {
               search();
             }
           }}
-          className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-3"
+          className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
         />
 
         <button
@@ -198,16 +226,18 @@ export default function Home() {
       </div>
 
       {/* 検索結果 */}
+
       {searchWord && (
         <>
 
-          <p className="mt-6 font-bold">
+          <p className="mt-6 font-bold text-gray-900 dark:text-white">
             検索中：{searchWord}
           </p>
 
           {/* 最安商品 */}
+
           {cheapest && (
-            <div className="mt-4 rounded-xl border p-4">
+            <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
 
               <div className="flex gap-4">
 
@@ -217,7 +247,9 @@ export default function Home() {
                       .mediumImageUrls?.[0]
                       ?.imageUrl
                   }
-                  alt={cheapest.Item.itemName}
+                  alt={
+                    cheapest.Item.itemName
+                  }
                   className="h-28 w-28 rounded object-contain"
                 />
 
@@ -225,7 +257,7 @@ export default function Home() {
 
                   <div>
 
-                    <div className="font-bold">
+                    <div className="font-bold text-gray-900 dark:text-white">
                       {cheapest.Item.itemName}
                     </div>
 
@@ -234,19 +266,19 @@ export default function Home() {
                       {cheapest.Item.itemPrice.toLocaleString()}
                     </div>
 
-                    <p className="mt-1 text-orange-600 font-bold">
+                    <p className="mt-1 font-bold text-orange-600">
                       {cheapest.Item.pointRate > 1
                         ? `🔥 ポイント${cheapest.Item.pointRate}倍`
                         : "🟢通常ポイント"}
                     </p>
 
-                    <p className="mt-1 text-blue-600">
+                    <p className="mt-1 text-blue-600 dark:text-blue-400">
                       獲得予定：約
                       {cheapest.Item.pointAmount.toLocaleString()}
                       pt
                     </p>
 
-                    <p className="text-sm font-bold">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
                       {cheapest.Item.shipping ===
                       "送料無料"
                         ? "🟢 送料無料"
@@ -263,7 +295,7 @@ export default function Home() {
                     </p>
 
                     {cheapest.Item.weight && (
-                      <p className="mt-2 text-purple-600 font-bold">
+                      <p className="mt-2 font-bold text-purple-600 dark:text-purple-400">
                         単価：
                         ¥
                         {(
@@ -279,7 +311,9 @@ export default function Home() {
                   </div>
 
                   <a
-                    href={cheapest.Item.itemUrl}
+                    href={
+                      cheapest.Item.itemUrl
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 rounded-lg bg-yellow-500 px-4 py-2 text-center font-bold text-white hover:bg-yellow-600"
@@ -295,34 +329,32 @@ export default function Home() {
           )}
 
           {/* Amazonへのリンク */}
+
           {amazonSearchUrl && (
-           <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-800 dark:bg-orange-50 p-5">
+            <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-800 dark:bg-orange-950">
 
-            <p className="text-lg font-bold text-gray-900 dark:text-black">
-              Amazonでも探す
-             </p>
+              <p className="text-lg font-bold text-black">
+                Amazonでも探す
+              </p>
 
-             <p className="mt-1 text-sm text-gray-700 dark:text-gray-500">
-             「{searchWord}」をAmazonで検索します。
-             </p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                「{searchWord}」をAmazonで検索します。
+              </p>
 
-             <a href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(
-             searchWord
-             )}&tag=${encodeURIComponent(
-             amazonAssociateId || ""
-             )}`
-             }
-             target="_blank"
-             rel="noopener noreferrer"
-             className="mt-4 block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-white hover:bg-orange-600"
-             >
-            Amazonで「{searchWord}」を探す
-           </a>
+              <a
+                href={amazonSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-white hover:bg-orange-600"
+              >
+                Amazonで「{searchWord}」を探す
+              </a>
 
-          </div>
+            </div>
           )}
 
           {/* 商品一覧 */}
+
           <ul className="mt-6 space-y-4">
 
             {items.map(
@@ -338,7 +370,7 @@ export default function Home() {
                 return (
                   <li
                     key={index}
-                    className="rounded-xl border p-4"
+                    className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
                   >
 
                     <div className="flex gap-4">
@@ -349,7 +381,9 @@ export default function Home() {
                             .mediumImageUrls?.[0]
                             ?.imageUrl
                         }
-                        alt={item.Item.itemName}
+                        alt={
+                          item.Item.itemName
+                        }
                         className="h-28 w-28 rounded object-contain"
                       />
 
@@ -357,7 +391,7 @@ export default function Home() {
 
                         <div>
 
-                          <h3 className="text-lg font-bold line-clamp-2">
+                          <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
                             {item.Item.itemName}
                           </h3>
 
@@ -366,19 +400,19 @@ export default function Home() {
                             {item.Item.itemPrice.toLocaleString()}
                           </p>
 
-                          <p className="mt-1 text-orange-600 font-bold">
+                          <p className="mt-1 font-bold text-orange-600">
                             {item.Item.pointRate > 1
                               ? `🔥 ポイント${item.Item.pointRate}倍`
                               : "🟢通常ポイント"}
                           </p>
 
-                          <p className="mt-1 text-blue-600">
+                          <p className="mt-1 text-blue-600 dark:text-blue-400">
                             獲得予定：約
                             {point.toLocaleString()}
                             pt
                           </p>
 
-                          <p className="text-sm font-bold">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">
                             {item.Item.shipping ===
                             "送料無料"
                               ? "🟢 送料無料"
@@ -392,7 +426,7 @@ export default function Home() {
                           </p>
 
                           {item.Item.weight && (
-                            <p className="mt-1 text-purple-600 font-bold">
+                            <p className="mt-1 font-bold text-purple-600 dark:text-purple-400">
                               単価：
                               ¥
                               {(
@@ -405,10 +439,16 @@ export default function Home() {
                         </div>
 
                         <a
-                          href={item.Item.itemUrl}
+                          href={
+                            item.Item.itemUrl
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-lg bg-red-500 px-4 py-2 text-center text-white hover:bg-red-600"
+                          className={`mt-4 inline-block rounded-lg px-4 py-2 text-center text-white ${
+                            item.Item.shop === "楽天"
+                              ? "bg-red-500 hover:bg-red-600"
+                              : "bg-blue-500 hover:bg-blue-600"
+                          }`}
                         >
                           {item.Item.shop}へ移動
                         </a>
