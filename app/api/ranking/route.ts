@@ -15,9 +15,19 @@ const RANKING_GENRES = {
   },
 };
 
+type RankingGenre = {
+  name: string;
+  genreId: number;
+};
+
+async function sleep(ms: number) {
+  await new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
+}
+
 async function getRanking(
-  genreId: number,
-  genreName: string
+  genre: RankingGenre
 ) {
   const applicationId =
     process.env.RAKUTEN_APP_ID;
@@ -42,26 +52,25 @@ async function getRanking(
 
   const params = new URLSearchParams();
 
+  // 必須
   params.set(
     "applicationId",
     applicationId
   );
 
-  params.set(
-    "accessKey",
-    accessKey
-  );
-
+  // ランキングAPI
   params.set(
     "genreId",
-    String(genreId)
+    String(genre.genreId)
   );
 
+  // JSON
   params.set(
     "format",
     "json"
   );
 
+  // JSON format version 2
   params.set(
     "formatVersion",
     "2"
@@ -71,6 +80,12 @@ async function getRanking(
   params.set(
     "page",
     "1"
+  );
+
+  // リアルタイムランキング
+  params.set(
+    "period",
+    "realtime"
   );
 
   // アフィリエイト
@@ -86,26 +101,28 @@ async function getRanking(
     params.toString();
 
   console.log(
-    `楽天ランキング取得開始: ${genreName}`
+    `楽天ランキング取得: ${genre.name}`
   );
 
+  /*
+   * accessKeyは公式仕様に従って
+   * HTTPヘッダーで送る。
+   */
   const res = await fetch(url, {
     method: "GET",
 
     cache: "no-store",
 
     headers: {
-      "Referer": "https://babytoku.vercel.app/",
-      "User-Agent":
-        "Mozilla/5.0 (compatible; BabyToku/1.0)",
-      "Accept": "application/json",
+      accessKey: accessKey,
+      Accept: "application/json",
     },
   });
 
   const text = await res.text();
 
   console.log(
-    `楽天ランキング結果: ${genreName} ${res.status}`
+    `楽天ランキング結果: ${genre.name} / ${res.status}`
   );
 
   if (!res.ok) {
@@ -124,69 +141,98 @@ async function getRanking(
     );
   }
 
+  /*
+   * formatVersion=2 の場合、
+   *
+   * data.Items
+   *
+   * の中にランキング商品が入る。
+   */
   const rawItems =
     data.Items ?? [];
 
   /*
-   * 楽天ランキングAPIは、
-   * 現在取得できたランキングの先頭から
-   * 3商品を使用する。
+   * 上位3商品だけ使用。
+   *
+   * page=1なので、基本的に
+   * ランキング上位から取得される。
    */
-  const items = rawItems
-    .slice(0, 3)
-    .map((item: any) => ({
-      rank: Number(item.rank),
+  const items =
+    rawItems
+      .slice(0, 3)
+      .map((item: any) => ({
+        rank:
+          Number(item.rank ?? 0),
 
-      itemName:
-        item.itemName ?? "",
+        itemName:
+          item.itemName ?? "",
 
-      catchcopy:
-        item.catchcopy ?? "",
+        catchcopy:
+          item.catchcopy ?? "",
 
-      itemPrice:
-        Number(item.itemPrice ?? 0),
+        itemPrice:
+          Number(item.itemPrice ?? 0),
 
-      itemUrl:
-        item.affiliateUrl ||
-        item.itemUrl ||
-        "",
+        /*
+         * affiliateIdを指定しているので
+         * affiliateUrlが返ってくる。
+         */
+        itemUrl:
+          item.affiliateUrl ||
+          item.itemUrl ||
+          "",
 
-      affiliateUrl:
-        item.affiliateUrl ||
-        null,
+        affiliateUrl:
+          item.affiliateUrl ||
+          null,
 
-      imageUrl:
-        item.mediumImageUrls?.[0] ||
-        item.smallImageUrls?.[0] ||
-        null,
+        imageUrl:
+          item.mediumImageUrls?.[0] ||
+          item.smallImageUrls?.[0] ||
+          null,
 
-      mediumImageUrls:
-        item.mediumImageUrls ?? [],
+        mediumImageUrls:
+          item.mediumImageUrls ?? [],
 
-      shopName:
-        item.shopName ?? "",
+        shopName:
+          item.shopName ?? "",
 
-      pointRate:
-        Number(item.pointRate ?? 1),
+        pointRate:
+          Number(
+            item.pointRate ?? 1
+          ),
 
-      postageFlag:
-        Number(item.postageFlag ?? 1),
+        postageFlag:
+          Number(
+            item.postageFlag ?? 1
+          ),
 
-      availability:
-        Number(item.availability ?? 0),
+        availability:
+          Number(
+            item.availability ?? 0
+          ),
 
-      affiliateRate:
-        item.affiliateRate ?? null,
+        affiliateRate:
+          item.affiliateRate ??
+          null,
 
-      genreId:
-        String(item.genreId ?? genreId),
+        genreId:
+          String(
+            item.genreId ??
+            genre.genreId
+          ),
 
-      genreName,
-    }));
+        genreName:
+          genre.name,
+      }));
 
   return {
-    genreId,
-    genreName,
+    genreId:
+      genre.genreId,
+
+    genreName:
+      genre.name,
+
     items,
   };
 }
@@ -194,35 +240,29 @@ async function getRanking(
 export async function GET() {
   try {
     /*
-     * 3ジャンルを同時取得すると
-     * 楽天APIのレート制限に引っかかることがあるため、
-     * 少し間隔を空けて取得する。
+     * 楽天APIへのアクセスを
+     * 一気に3本飛ばさない。
+     *
+     * 429対策。
      */
 
     const diapers =
       await getRanking(
-        RANKING_GENRES.diapers.genreId,
-        RANKING_GENRES.diapers.name
+        RANKING_GENRES.diapers
       );
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1200)
-    );
+    await sleep(1500);
 
     const formula =
       await getRanking(
-        RANKING_GENRES.formula.genreId,
-        RANKING_GENRES.formula.name
+        RANKING_GENRES.formula
       );
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1200)
-    );
+    await sleep(1500);
 
     const wipes =
       await getRanking(
-        RANKING_GENRES.wipes.genreId,
-        RANKING_GENRES.wipes.name
+        RANKING_GENRES.wipes
       );
 
     return NextResponse.json({
@@ -250,7 +290,6 @@ export async function GET() {
             ? error.message
             : "楽天ランキング取得に失敗しました",
       },
-
       {
         status: 500,
       }
