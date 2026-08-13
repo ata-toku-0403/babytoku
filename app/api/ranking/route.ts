@@ -42,12 +42,6 @@ async function getRanking(
     );
   }
 
-  if (!affiliateId) {
-    throw new Error(
-      "RAKUTEN_AFFILIATE_ID が設定されていません"
-    );
-  }
-
   const params = new URLSearchParams();
 
   params.set(
@@ -58,11 +52,6 @@ async function getRanking(
   params.set(
     "accessKey",
     accessKey
-  );
-
-  params.set(
-    "affiliateId",
-    affiliateId
   );
 
   params.set(
@@ -80,10 +69,12 @@ async function getRanking(
     "2"
   );
 
-  params.set(
-    "page",
-    "1"
-  );
+  if (affiliateId) {
+    params.set(
+      "affiliateId",
+      affiliateId
+    );
+  }
 
   const url =
     "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601?" +
@@ -93,13 +84,7 @@ async function getRanking(
     cache: "no-store",
 
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
-
       Referer:
-        "https://babytoku.vercel.app/",
-
-      Origin:
         "https://babytoku.vercel.app/",
     },
   });
@@ -112,20 +97,47 @@ async function getRanking(
     );
   }
 
-  let data: any;
+  const data = JSON.parse(text);
 
-  try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error(
-      "楽天ランキングAPIのレスポンスをJSONとして解析できませんでした"
+  const rawItems =
+    data.Items ?? [];
+
+  /*
+   * 楽天ランキングAPIから返ってきた
+   * 商品を順位順に並べる
+   */
+  const sortedItems = [...rawItems]
+    .sort(
+      (a: any, b: any) =>
+        Number(a.rank) -
+        Number(b.rank)
     );
-  }
 
-  const items = (data.Items ?? [])
-    .slice(0, 3)
-    .map((item: any) => ({
-      rank: item.rank,
+  /*
+   * 1位～3位だけ取得
+   */
+  const topItems =
+    sortedItems
+      .filter(
+        (item: any) =>
+          Number(item.rank) >= 1 &&
+          Number(item.rank) <= 3
+      )
+      .slice(0, 3);
+
+  /*
+   * 万一、楽天側から1～3位が
+   * 返ってこなかった場合は、
+   * 先頭3件を使用
+   */
+  const finalItems =
+    topItems.length > 0
+      ? topItems
+      : sortedItems.slice(0, 3);
+
+  const items = finalItems.map(
+    (item: any) => ({
+      rank: Number(item.rank),
 
       itemName:
         item.itemName,
@@ -150,13 +162,14 @@ async function getRanking(
         null,
 
       mediumImageUrls:
-        item.mediumImageUrls ?? [],
+        item.mediumImageUrls ??
+        [],
 
       shopName:
         item.shopName,
 
       pointRate:
-        Number(item.pointRate ?? 1),
+        item.pointRate ?? 1,
 
       postageFlag:
         item.postageFlag,
@@ -170,9 +183,9 @@ async function getRanking(
       genreId:
         item.genreId,
 
-      genreName:
-        genreName,
-    }));
+      genreName,
+    })
+  );
 
   return {
     genreId,
@@ -183,9 +196,11 @@ async function getRanking(
 
 export async function GET() {
   try {
-    // =========================
-    // 紙おむつ
-    // =========================
+    /*
+     * 楽天APIを3回同時に叩くと
+     * Rate Limitに引っかかる可能性があるため、
+     * 順番に取得する
+     */
 
     const diapers =
       await getRanking(
@@ -193,9 +208,12 @@ export async function GET() {
         RANKING_GENRES.diapers.name
       );
 
-    // =========================
-    // 粉ミルク
-    // =========================
+    /*
+     * 少し待つ
+     */
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500)
+    );
 
     const formula =
       await getRanking(
@@ -203,19 +221,15 @@ export async function GET() {
         RANKING_GENRES.formula.name
       );
 
-    // =========================
-    // おしりふき
-    // =========================
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500)
+    );
 
     const wipes =
       await getRanking(
         RANKING_GENRES.wipes.genreId,
         RANKING_GENRES.wipes.name
       );
-
-    // =========================
-    // 成功
-    // =========================
 
     return NextResponse.json({
       status: 200,
@@ -241,6 +255,7 @@ export async function GET() {
             ? error.message
             : "楽天ランキング取得に失敗しました",
       },
+
       {
         status: 500,
       }
