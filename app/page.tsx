@@ -337,14 +337,6 @@ export default function Home() {
           {amazonSearchUrl && (
             <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-900 dark:bg-orange-950">
 
-              <p className="text-lg font-bold text-black dark:text-black">
-                Amazonでも探す
-              </p>
-
-              <p className="mt-1 text-sm text-gray-700 dark:text-gray-700">
-                「{searchWord}」をAmazonで検索します。
-              </p>
-
               <a
                 href={amazonSearchUrl}
                 target="_blank"

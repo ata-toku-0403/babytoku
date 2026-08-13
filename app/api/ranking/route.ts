@@ -5,15 +5,21 @@ const RANKING_GENRES = {
     name: "紙おむつ",
     genreId: 205198,
   },
+
   formula: {
     name: "粉ミルク",
     genreId: 401171,
   },
+
   wipes: {
     name: "おしりふき",
     genreId: 205194,
   },
 };
+
+// =========================
+// 楽天ランキングAPI
+// =========================
 
 async function getRanking(
   genreId: number,
@@ -67,8 +73,14 @@ async function getRanking(
     "2"
   );
 
-  // page は指定しない
-  // 楽天APIからランキング上位の商品を取得する
+  params.set(
+    "page",
+    "1"
+  );
+
+  // =========================
+  // アフィリエイトID
+  // =========================
 
   if (affiliateId) {
     params.set(
@@ -82,9 +94,13 @@ async function getRanking(
     params.toString();
 
   const res = await fetch(url, {
-    cache: "no-store",
+    next: {
+      revalidate: 300,
+    },
+
     headers: {
-      Referer: "https://babytoku.vercel.app/",
+      Referer:
+        "https://babytoku.vercel.app/",
     },
   });
 
@@ -98,13 +114,23 @@ async function getRanking(
 
   const data = JSON.parse(text);
 
+  // =========================
+  // 上位3商品だけ取得
+  // =========================
+
   const items = (data.Items ?? [])
     .slice(0, 3)
     .map((item: any) => ({
       rank: item.rank,
-      itemName: item.itemName,
-      catchcopy: item.catchcopy,
-      itemPrice: Number(item.itemPrice),
+
+      itemName:
+        item.itemName,
+
+      catchcopy:
+        item.catchcopy,
+
+      itemPrice:
+        Number(item.itemPrice),
 
       // 楽天アフィリエイトリンク
       itemUrl:
@@ -112,7 +138,8 @@ async function getRanking(
         item.itemUrl,
 
       affiliateUrl:
-        item.affiliateUrl || null,
+        item.affiliateUrl ||
+        null,
 
       imageUrl:
         item.mediumImageUrls?.[0] ||
@@ -126,7 +153,7 @@ async function getRanking(
         item.shopName,
 
       pointRate:
-        item.pointRate ?? 1,
+        Number(item.pointRate ?? 1),
 
       postageFlag:
         item.postageFlag,
@@ -149,6 +176,10 @@ async function getRanking(
     items,
   };
 }
+
+// =========================
+// GET
+// =========================
 
 export async function GET() {
   try {
@@ -173,14 +204,24 @@ export async function GET() {
       ),
     ]);
 
-    return NextResponse.json({
-      status: 200,
-      rankings: {
-        diapers,
-        formula,
-        wipes,
+    return NextResponse.json(
+      {
+        status: 200,
+
+        rankings: {
+          diapers,
+          formula,
+          wipes,
+        },
       },
-    });
+      {
+        headers: {
+          // ブラウザ側にも5分間キャッシュさせる
+          "Cache-Control":
+            "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      }
+    );
   } catch (error) {
     console.error(
       "楽天ランキングAPIエラー:",
@@ -190,6 +231,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: 500,
+
         error:
           error instanceof Error
             ? error.message
