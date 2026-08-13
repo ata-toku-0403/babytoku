@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Home() {
   const [keyword, setKeyword] = useState("");
@@ -8,6 +8,15 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
+  // =========================
+  // 楽天ランキング
+  // =========================
+  const [rankings, setRankings] = useState<any>(null);
+  const [rankingLoading, setRankingLoading] = useState(true);
+
+  // =========================
+  // 重量・枚数取得
+  // =========================
   function getWeight(name: string) {
     // 「68枚入り×4個」「68枚×4個」など
     const packMatch = name.match(
@@ -42,6 +51,44 @@ export default function Home() {
     return value;
   }
 
+  // =========================
+  // 楽天ランキング取得
+  // =========================
+  useEffect(() => {
+    const fetchRankings = async () => {
+      try {
+        setRankingLoading(true);
+
+        const res = await fetch("/api/ranking", {
+          cache: "no-store",
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.rankings) {
+          setRankings(data.rankings);
+        } else {
+          console.error(
+            "楽天ランキング取得エラー:",
+            data
+          );
+        }
+      } catch (error) {
+        console.error(
+          "楽天ランキング取得エラー:",
+          error
+        );
+      } finally {
+        setRankingLoading(false);
+      }
+    };
+
+    fetchRankings();
+  }, []);
+
+  // =========================
+  // 商品検索
+  // =========================
   const search = async () => {
     if (!keyword.trim()) return;
 
@@ -67,9 +114,11 @@ export default function Home() {
             item.Item.affiliateUrl ||
             item.Item.itemUrl,
 
-          mediumImageUrls: item.Item.mediumImageUrls,
+          mediumImageUrls:
+            item.Item.mediumImageUrls,
 
-          pointRate: item.Item.pointRate ?? 1,
+          pointRate:
+            item.Item.pointRate ?? 1,
 
           pointAmount: Math.floor(
             item.Item.itemPrice *
@@ -77,7 +126,9 @@ export default function Home() {
               100
           ),
 
-          weight: getWeight(item.Item.itemName),
+          weight: getWeight(
+            item.Item.itemName
+          ),
 
           shop: "楽天",
 
@@ -102,7 +153,8 @@ export default function Home() {
 
           mediumImageUrls: [
             {
-              imageUrl: item.image?.medium,
+              imageUrl:
+                item.image?.medium,
             },
           ],
 
@@ -116,7 +168,8 @@ export default function Home() {
           shop: "Yahoo!ショッピング",
 
           shipping:
-            item.shipping?.name === "送料無料"
+            item.shipping?.name ===
+            "送料無料"
               ? "送料無料"
               : "送料別途",
         },
@@ -168,7 +221,9 @@ export default function Home() {
   const amazonAssociateId =
     process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_ID;
 
-  // 検索キーワードをAmazonで検索するリンク
+  // =========================
+  // Amazon検索リンク
+  // =========================
   const amazonSearchUrl =
     searchWord && amazonAssociateId
       ? `https://www.amazon.co.jp/s?k=${encodeURIComponent(
@@ -177,6 +232,91 @@ export default function Home() {
           amazonAssociateId
         )}`
       : "";
+
+  // =========================
+  // ランキング商品
+  // =========================
+  const RankingCard = ({
+    title,
+    data,
+  }: {
+    title: string;
+    data: any;
+  }) => {
+    if (!data) return null;
+
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+
+        <h3 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+          {title}
+        </h3>
+
+        <div className="space-y-4">
+
+          {data.items?.map(
+            (item: any, index: number) => (
+              <a
+                key={`${item.rank}-${index}`}
+                href={item.itemUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-lg border border-gray-100 p-3 transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+              >
+
+                <div className="flex gap-3">
+
+                  {/* 順位 */}
+                  <div className="flex w-8 shrink-0 items-start justify-center">
+
+                    <span className="text-lg font-bold text-gray-700 dark:text-gray-200">
+                      {index === 0
+                        ? "🥇"
+                        : index === 1
+                        ? "🥈"
+                        : "🥉"}
+                    </span>
+
+                  </div>
+
+                  {/* 商品画像 */}
+                  <img
+                    src={item.imageUrl}
+                    alt={item.itemName}
+                    className="h-20 w-20 shrink-0 rounded object-contain"
+                  />
+
+                  {/* 商品情報 */}
+                  <div className="min-w-0 flex-1">
+
+                    <p className="line-clamp-3 text-sm font-bold text-gray-900 dark:text-white">
+                      {item.itemName}
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-red-600">
+                      ¥
+                      {Number(
+                        item.itemPrice
+                      ).toLocaleString()}
+                    </p>
+
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {item.shopName}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </a>
+            )
+          )}
+
+        </div>
+
+      </div>
+    );
+  };
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
@@ -193,31 +333,93 @@ export default function Home() {
       </p>
 
       {/* =========================
+          今日のランキング
+      ========================= */}
+      <section className="mt-8">
+
+        <div className="mb-4">
+
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            🏆 今日のランキング
+          </h2>
+
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            楽天市場の人気商品をチェック
+          </p>
+
+        </div>
+
+        {rankingLoading ? (
+
+          <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+            ランキングを読み込んでいます……
+          </div>
+
+        ) : rankings ? (
+
+          <div className="grid gap-4 md:grid-cols-3">
+
+            <RankingCard
+              title="🧷 紙おむつ"
+              data={rankings.diapers}
+            />
+
+            <RankingCard
+              title="🍼 粉ミルク"
+              data={rankings.formula}
+            />
+
+            <RankingCard
+              title="🧻 おしりふき"
+              data={rankings.wipes}
+            />
+
+          </div>
+
+        ) : (
+
+          <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+            ランキングを取得できませんでした。
+          </div>
+
+        )}
+
+      </section>
+
+      {/* =========================
           検索
       ========================= */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <div className="mt-10">
 
-        <input
-          type="text"
-          placeholder="商品名を入力（例：はぐくみ）"
-          value={keyword}
-          onChange={(e) =>
-            setKeyword(e.target.value)
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              search();
+        <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
+          🔎 商品を検索
+        </h2>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+
+          <input
+            type="text"
+            placeholder="商品名を入力（例：はぐくみ）"
+            value={keyword}
+            onChange={(e) =>
+              setKeyword(e.target.value)
             }
-          }}
-          className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-        />
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                search();
+              }
+            }}
+            className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+          />
 
-        <button
-          onClick={search}
-          className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
-        >
-          価格を比較する
-        </button>
+          <button
+            onClick={search}
+            className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+          >
+            価格を比較する
+          </button>
+
+        </div>
 
       </div>
 
@@ -226,6 +428,7 @@ export default function Home() {
       ========================= */}
       {searchWord && (
         <>
+
           <p className="mt-6 font-bold text-gray-900 dark:text-white">
             「{searchWord}」の検索結果
 
@@ -269,7 +472,7 @@ export default function Home() {
                       {cheapest.Item.itemPrice.toLocaleString()}
                     </div>
 
-                    <p className="mt-1 font-bold text-orange-600">
+                    <p className="mt-2 font-bold text-orange-600">
                       {cheapest.Item.pointRate > 1
                         ? `🔥 ポイント${cheapest.Item.pointRate}倍`
                         : "🟢 通常ポイント"}
@@ -341,7 +544,7 @@ export default function Home() {
                 href={amazonSearchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-black hover:bg-orange-600"
+                className="block rounded-lg bg-orange-500 px-5 py-3 text-center font-bold text-black hover:bg-orange-600"
               >
                 Amazonで「{searchWord}」を探す
               </a>
@@ -463,12 +666,13 @@ export default function Home() {
       {/* =========================
           APIクレジット
       ========================= */}
-      <footer className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
+      <footer className="mt-12 border-t border-gray-200 pt-8">
 
         <div className="flex flex-col items-center gap-4">
 
           {/* 楽天 */}
           <div className="text-sm text-gray-600 dark:text-gray-400">
+
             <a
               href="https://developers.rakuten.com/"
               target="_blank"
@@ -477,10 +681,12 @@ export default function Home() {
             >
               Supported by Rakuten Developers
             </a>
+
           </div>
 
           {/* Yahoo! JAPAN */}
           <div className="text-sm text-gray-600 dark:text-gray-400">
+
             <a
               href="https://developer.yahoo.co.jp/sitemap/"
               target="_blank"
@@ -489,6 +695,7 @@ export default function Home() {
             >
               Webサービス by Yahoo! JAPAN
             </a>
+
           </div>
 
           <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
