@@ -5,12 +5,10 @@ const RANKING_GENRES = {
     name: "紙おむつ",
     genreId: 205198,
   },
-
   formula: {
     name: "粉ミルク",
     genreId: 401171,
   },
-
   wipes: {
     name: "おしりふき",
     genreId: 205194,
@@ -69,6 +67,13 @@ async function getRanking(
     "2"
   );
 
+  // 1ページ目
+  params.set(
+    "page",
+    "1"
+  );
+
+  // アフィリエイト
   if (affiliateId) {
     params.set(
       "affiliateId",
@@ -80,16 +85,28 @@ async function getRanking(
     "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601?" +
     params.toString();
 
+  console.log(
+    `楽天ランキング取得開始: ${genreName}`
+  );
+
   const res = await fetch(url, {
+    method: "GET",
+
     cache: "no-store",
 
     headers: {
-      Referer:
-        "https://babytoku.vercel.app/",
+      "Referer": "https://babytoku.vercel.app/",
+      "User-Agent":
+        "Mozilla/5.0 (compatible; BabyToku/1.0)",
+      "Accept": "application/json",
     },
   });
 
   const text = await res.text();
+
+  console.log(
+    `楽天ランキング結果: ${genreName} ${res.status}`
+  );
 
   if (!res.ok) {
     throw new Error(
@@ -97,60 +114,42 @@ async function getRanking(
     );
   }
 
-  const data = JSON.parse(text);
+  let data: any;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(
+      "楽天ランキングAPIのJSON解析に失敗しました"
+    );
+  }
 
   const rawItems =
     data.Items ?? [];
 
   /*
-   * 楽天ランキングAPIから返ってきた
-   * 商品を順位順に並べる
+   * 楽天ランキングAPIは、
+   * 現在取得できたランキングの先頭から
+   * 3商品を使用する。
    */
-  const sortedItems = [...rawItems]
-    .sort(
-      (a: any, b: any) =>
-        Number(a.rank) -
-        Number(b.rank)
-    );
-
-  /*
-   * 1位～3位だけ取得
-   */
-  const topItems =
-    sortedItems
-      .filter(
-        (item: any) =>
-          Number(item.rank) >= 1 &&
-          Number(item.rank) <= 3
-      )
-      .slice(0, 3);
-
-  /*
-   * 万一、楽天側から1～3位が
-   * 返ってこなかった場合は、
-   * 先頭3件を使用
-   */
-  const finalItems =
-    topItems.length > 0
-      ? topItems
-      : sortedItems.slice(0, 3);
-
-  const items = finalItems.map(
-    (item: any) => ({
+  const items = rawItems
+    .slice(0, 3)
+    .map((item: any) => ({
       rank: Number(item.rank),
 
       itemName:
-        item.itemName,
+        item.itemName ?? "",
 
       catchcopy:
-        item.catchcopy,
+        item.catchcopy ?? "",
 
       itemPrice:
-        Number(item.itemPrice),
+        Number(item.itemPrice ?? 0),
 
       itemUrl:
         item.affiliateUrl ||
-        item.itemUrl,
+        item.itemUrl ||
+        "",
 
       affiliateUrl:
         item.affiliateUrl ||
@@ -162,30 +161,28 @@ async function getRanking(
         null,
 
       mediumImageUrls:
-        item.mediumImageUrls ??
-        [],
+        item.mediumImageUrls ?? [],
 
       shopName:
-        item.shopName,
+        item.shopName ?? "",
 
       pointRate:
-        item.pointRate ?? 1,
+        Number(item.pointRate ?? 1),
 
       postageFlag:
-        item.postageFlag,
+        Number(item.postageFlag ?? 1),
 
       availability:
-        item.availability,
+        Number(item.availability ?? 0),
 
       affiliateRate:
-        item.affiliateRate,
+        item.affiliateRate ?? null,
 
       genreId:
-        item.genreId,
+        String(item.genreId ?? genreId),
 
       genreName,
-    })
-  );
+    }));
 
   return {
     genreId,
@@ -197,9 +194,9 @@ async function getRanking(
 export async function GET() {
   try {
     /*
-     * 楽天APIを3回同時に叩くと
-     * Rate Limitに引っかかる可能性があるため、
-     * 順番に取得する
+     * 3ジャンルを同時取得すると
+     * 楽天APIのレート制限に引っかかることがあるため、
+     * 少し間隔を空けて取得する。
      */
 
     const diapers =
@@ -208,11 +205,8 @@ export async function GET() {
         RANKING_GENRES.diapers.name
       );
 
-    /*
-     * 少し待つ
-     */
     await new Promise((resolve) =>
-      setTimeout(resolve, 500)
+      setTimeout(resolve, 1200)
     );
 
     const formula =
@@ -222,7 +216,7 @@ export async function GET() {
       );
 
     await new Promise((resolve) =>
-      setTimeout(resolve, 500)
+      setTimeout(resolve, 1200)
     );
 
     const wipes =
@@ -240,6 +234,7 @@ export async function GET() {
         wipes,
       },
     });
+
   } catch (error) {
     console.error(
       "楽天ランキングAPIエラー:",
