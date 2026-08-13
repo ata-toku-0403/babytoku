@@ -288,7 +288,7 @@ export async function GET() {
         error:
           error instanceof Error
             ? error.message
-            : "楽天ランキング取得に失敗しました",
+            : "楽天ランキングの取得に失敗しました",
       },
       {
         status: 500,
