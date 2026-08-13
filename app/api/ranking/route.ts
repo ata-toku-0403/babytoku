@@ -17,10 +17,6 @@ const RANKING_GENRES = {
   },
 };
 
-// =========================
-// 楽天ランキングAPI
-// =========================
-
 async function getRanking(
   genreId: number,
   genreName: string
@@ -46,6 +42,12 @@ async function getRanking(
     );
   }
 
+  if (!affiliateId) {
+    throw new Error(
+      "RAKUTEN_AFFILIATE_ID が設定されていません"
+    );
+  }
+
   const params = new URLSearchParams();
 
   params.set(
@@ -56,6 +58,11 @@ async function getRanking(
   params.set(
     "accessKey",
     accessKey
+  );
+
+  params.set(
+    "affiliateId",
+    affiliateId
   );
 
   params.set(
@@ -78,25 +85,12 @@ async function getRanking(
     "1"
   );
 
-  // =========================
-  // アフィリエイトID
-  // =========================
-
-  if (affiliateId) {
-    params.set(
-      "affiliateId",
-      affiliateId
-    );
-  }
-
   const url =
     "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601?" +
     params.toString();
 
   const res = await fetch(url, {
-    next: {
-      revalidate: 300,
-    },
+    cache: "no-store",
 
     headers: {
       Referer:
@@ -112,11 +106,15 @@ async function getRanking(
     );
   }
 
-  const data = JSON.parse(text);
+  let data: any;
 
-  // =========================
-  // 上位3商品だけ取得
-  // =========================
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(
+      "楽天ランキングAPIのレスポンスをJSONとして解析できませんでした"
+    );
+  }
 
   const items = (data.Items ?? [])
     .slice(0, 3)
@@ -132,7 +130,6 @@ async function getRanking(
       itemPrice:
         Number(item.itemPrice),
 
-      // 楽天アフィリエイトリンク
       itemUrl:
         item.affiliateUrl ||
         item.itemUrl,
@@ -167,7 +164,8 @@ async function getRanking(
       genreId:
         item.genreId,
 
-      genreName,
+      genreName:
+        genreName,
     }));
 
   return {
@@ -177,51 +175,35 @@ async function getRanking(
   };
 }
 
-// =========================
-// GET
-// =========================
-
 export async function GET() {
   try {
-    const [
-      diapers,
-      formula,
-      wipes,
-    ] = await Promise.all([
-      getRanking(
+    const diapers =
+      await getRanking(
         RANKING_GENRES.diapers.genreId,
         RANKING_GENRES.diapers.name
-      ),
+      );
 
-      getRanking(
+    const formula =
+      await getRanking(
         RANKING_GENRES.formula.genreId,
         RANKING_GENRES.formula.name
-      ),
+      );
 
-      getRanking(
+    const wipes =
+      await getRanking(
         RANKING_GENRES.wipes.genreId,
         RANKING_GENRES.wipes.name
-      ),
-    ]);
+      );
 
-    return NextResponse.json(
-      {
-        status: 200,
+    return NextResponse.json({
+      status: 200,
 
-        rankings: {
-          diapers,
-          formula,
-          wipes,
-        },
+      rankings: {
+        diapers,
+        formula,
+        wipes,
       },
-      {
-        headers: {
-          // ブラウザ側にも5分間キャッシュさせる
-          "Cache-Control":
-            "public, s-maxage=300, stale-while-revalidate=600",
-        },
-      }
-    );
+    });
   } catch (error) {
     console.error(
       "楽天ランキングAPIエラー:",
