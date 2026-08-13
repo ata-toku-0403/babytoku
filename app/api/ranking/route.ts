@@ -48,6 +48,11 @@ async function getRanking(
   );
 
   params.set(
+    "accessKey",
+    accessKey
+  );
+
+  params.set(
     "genreId",
     String(genreId)
   );
@@ -62,10 +67,8 @@ async function getRanking(
     "2"
   );
 
-  params.set(
-    "page",
-    "1"
-  );
+  // page は指定しない
+  // 楽天APIからランキング上位の商品を取得する
 
   if (affiliateId) {
     params.set(
@@ -79,13 +82,11 @@ async function getRanking(
     params.toString();
 
   const res = await fetch(url, {
-  cache: "no-store",
-  headers: {
-    accessKey: accessKey,
-    Referer: "https://babytoku.vercel.app/",
-    Origin: "https://babytoku.vercel.app",
-  },
-});
+    cache: "no-store",
+    headers: {
+      Referer: "https://babytoku.vercel.app/",
+    },
+  });
 
   const text = await res.text();
 
@@ -95,29 +96,17 @@ async function getRanking(
     );
   }
 
-  let data: any;
-
-  try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error(
-      "楽天ランキングAPIからJSONではないレスポンスが返されました"
-    );
-  }
+  const data = JSON.parse(text);
 
   const items = (data.Items ?? [])
     .slice(0, 3)
     .map((item: any) => ({
       rank: item.rank,
-
       itemName: item.itemName,
-
       catchcopy: item.catchcopy,
+      itemPrice: Number(item.itemPrice),
 
-      itemPrice: item.itemPrice,
-
-      // affiliateIdを指定すると
-      // 楽天APIからaffiliateUrlが返される
+      // 楽天アフィリエイトリンク
       itemUrl:
         item.affiliateUrl ||
         item.itemUrl,
