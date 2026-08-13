@@ -79,12 +79,13 @@ async function getRanking(
     params.toString();
 
   const res = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      accessKey: accessKey,
-      Referer: "https://babytoku.vercel.app/",
-    },
-  });
+  cache: "no-store",
+  headers: {
+    accessKey: accessKey,
+    Referer: "https://babytoku.vercel.app/",
+    Origin: "https://babytoku.vercel.app",
+  },
+});
 
   const text = await res.text();
 
