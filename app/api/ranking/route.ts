@@ -84,8 +84,11 @@ async function getRanking(
     params.toString();
 
   const res = await fetch(url, {
-    cache: "no-store",
-  });
+  cache: "no-store",
+  headers: {
+    Referer: "https://babytoku.vercel.app/",
+  },
+});
 
   const text = await res.text();
 
