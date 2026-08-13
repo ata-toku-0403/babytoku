@@ -93,7 +93,13 @@ async function getRanking(
     cache: "no-store",
 
     headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+
       Referer:
+        "https://babytoku.vercel.app/",
+
+      Origin:
         "https://babytoku.vercel.app/",
     },
   });
@@ -177,11 +183,19 @@ async function getRanking(
 
 export async function GET() {
   try {
+    // =========================
+    // 紙おむつ
+    // =========================
+
     const diapers =
       await getRanking(
         RANKING_GENRES.diapers.genreId,
         RANKING_GENRES.diapers.name
       );
+
+    // =========================
+    // 粉ミルク
+    // =========================
 
     const formula =
       await getRanking(
@@ -189,11 +203,19 @@ export async function GET() {
         RANKING_GENRES.formula.name
       );
 
+    // =========================
+    // おしりふき
+    // =========================
+
     const wipes =
       await getRanking(
         RANKING_GENRES.wipes.genreId,
         RANKING_GENRES.wipes.name
       );
+
+    // =========================
+    // 成功
+    // =========================
 
     return NextResponse.json({
       status: 200,
