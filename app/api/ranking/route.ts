@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 // =====================================================
 // 今日のランキングテーマ
+// 7ジャンルを日替わりで切り替える
 // =====================================================
 
 const RANKING_THEMES = [
@@ -23,53 +24,50 @@ const RANKING_THEMES = [
     genreId: 205194,
     emoji: "🧻",
   },
-
-  // -------------------------------------------------
-  // 以下3つのgenreIdは、楽天の正確なジャンルIDを
-  // 確定してから入れます。
-  // -------------------------------------------------
-
   {
     key: "bodysoap",
     name: "ベビー用ボディソープ",
-    genreId: 0,
+    genreId: 505410,
     emoji: "🛁",
   },
   {
     key: "moisturizer",
     name: "ベビー用保湿剤",
-    genreId: 0,
+    genreId: 401164,
     emoji: "🧴",
   },
   {
     key: "babyfood",
     name: "離乳食",
-    genreId: 0,
+    genreId: 213980,
     emoji: "🥣",
+  },
+  {
+    key: "babytoys",
+    name: "赤ちゃん用おもちゃ",
+    genreId: 201591,
+    emoji: "🧸",
   },
 ];
 
 
 // =====================================================
-// 今日のテーマを決定
+// 日本時間で今日のランキングテーマを決める
 // =====================================================
 
 function getTodayTheme() {
-  const today = new Date();
+  const now = new Date();
 
-  // 日本時間で日付を取得
-  const japanDate = new Intl.DateTimeFormat(
-    "ja-JP",
-    {
+  const japanDateString =
+    new Intl.DateTimeFormat("ja-JP", {
       timeZone: "Asia/Tokyo",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }
-  ).format(today);
+    }).format(now);
 
-  // YYYY/MM/DD → 数字に変換
-  const numbers = japanDate.match(/\d+/g);
+  const numbers =
+    japanDateString.match(/\d+/g);
 
   if (!numbers || numbers.length < 3) {
     return RANKING_THEMES[0];
@@ -79,25 +77,35 @@ function getTodayTheme() {
   const month = Number(numbers[1]);
   const day = Number(numbers[2]);
 
-  // その日の通算日数
   const date = new Date(
-    Date.UTC(year, month - 1, day)
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
   );
 
-  const start = new Date(
-    Date.UTC(year, 0, 0)
+  const startOfYear = new Date(
+    Date.UTC(
+      year,
+      0,
+      1
+    )
   );
 
   const diff =
     date.getTime() -
-    start.getTime();
+    startOfYear.getTime();
 
-  const dayOfYear = Math.floor(
-    diff / (1000 * 60 * 60 * 24)
-  );
+  const dayOfYear =
+    Math.floor(
+      diff /
+        (1000 * 60 * 60 * 24)
+    ) + 1;
 
   const index =
-    dayOfYear % RANKING_THEMES.length;
+    (dayOfYear - 1) %
+    RANKING_THEMES.length;
 
   return RANKING_THEMES[index];
 }
@@ -108,9 +116,12 @@ function getTodayTheme() {
 // =====================================================
 
 async function getRanking(
-  genreId: number,
-  genreName: string,
-  emoji: string
+  theme: {
+    key: string;
+    name: string;
+    genreId: number;
+    emoji: string;
+  }
 ) {
   const applicationId =
     process.env.RAKUTEN_APP_ID;
@@ -120,6 +131,10 @@ async function getRanking(
 
   const affiliateId =
     process.env.RAKUTEN_AFFILIATE_ID;
+
+  // ---------------------------------------------------
+  // 環境変数チェック
+  // ---------------------------------------------------
 
   if (!applicationId) {
     throw new Error(
@@ -133,11 +148,16 @@ async function getRanking(
     );
   }
 
-  if (!genreId) {
+  if (!affiliateId) {
     throw new Error(
-      `${genreName} のジャンルIDがまだ設定されていません`
+      "RAKUTEN_AFFILIATE_ID が設定されていません"
     );
   }
+
+
+  // ---------------------------------------------------
+  // APIパラメータ
+  // ---------------------------------------------------
 
   const params =
     new URLSearchParams();
@@ -154,7 +174,7 @@ async function getRanking(
 
   params.set(
     "genreId",
-    String(genreId)
+    String(theme.genreId)
   );
 
   params.set(
@@ -167,23 +187,25 @@ async function getRanking(
     "2"
   );
 
-  // 1ページ目
   params.set(
     "page",
     "1"
   );
 
-  // アフィリエイト
-  if (affiliateId) {
-    params.set(
-      "affiliateId",
-      affiliateId
-    );
-  }
+  params.set(
+    "affiliateId",
+    affiliateId
+  );
+
+
+  // ---------------------------------------------------
+  // 楽天ランキングAPI
+  // ---------------------------------------------------
 
   const url =
     "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601?" +
     params.toString();
+
 
   const res = await fetch(
     url,
@@ -195,7 +217,7 @@ async function getRanking(
           "https://babytoku.vercel.app/",
 
         Origin:
-          "https://babytoku.vercel.app/",
+          "https://babytoku.vercel.app",
 
         "User-Agent":
           "Mozilla/5.0",
@@ -203,14 +225,25 @@ async function getRanking(
     }
   );
 
+
   const text =
     await res.text();
+
+
+  // ---------------------------------------------------
+  // APIエラー
+  // ---------------------------------------------------
 
   if (!res.ok) {
     throw new Error(
       `楽天ランキングAPIエラー: ${res.status} ${text}`
     );
   }
+
+
+  // ---------------------------------------------------
+  // JSON解析
+  // ---------------------------------------------------
 
   let data: any;
 
@@ -222,98 +255,114 @@ async function getRanking(
     );
   }
 
-  // ===================================================
-  // Items取得
-  // ===================================================
+
+  // ---------------------------------------------------
+  // 商品データ
+  // ---------------------------------------------------
 
   const rawItems =
     data.Items ?? [];
 
-  // ===================================================
-  // 1～3位だけ取得
-  //
-  // API側の返却順に依存せず rank を確認する
-  // ===================================================
 
-  const items = rawItems
-    .filter(
-      (item: any) =>
-        Number(item.rank) >= 1 &&
-        Number(item.rank) <= 3
-    )
-    .sort(
-      (a: any, b: any) =>
-        Number(a.rank) -
-        Number(b.rank)
-    )
-    .slice(0, 3)
-    .map(
-      (item: any) => ({
-        rank:
-          Number(item.rank),
+  // ---------------------------------------------------
+  // 1位～3位だけ取得
+  // ---------------------------------------------------
 
-        itemName:
-          item.itemName,
+  const items =
+    rawItems
+      .filter(
+        (item: any) => {
+          const rank =
+            Number(item.rank);
 
-        catchcopy:
-          item.catchcopy,
+          return (
+            rank >= 1 &&
+            rank <= 3
+          );
+        }
+      )
+      .sort(
+        (a: any, b: any) =>
+          Number(a.rank) -
+          Number(b.rank)
+      )
+      .slice(0, 3)
+      .map(
+        (item: any) => ({
+          rank:
+            Number(item.rank),
 
-        itemPrice:
-          Number(item.itemPrice ?? 0),
+          itemName:
+            item.itemName,
 
-        itemUrl:
-          item.affiliateUrl ||
-          item.itemUrl,
+          catchcopy:
+            item.catchcopy,
 
-        affiliateUrl:
-          item.affiliateUrl ||
-          null,
+          itemPrice:
+            Number(
+              item.itemPrice ?? 0
+            ),
 
-        imageUrl:
-          item.mediumImageUrls?.[0] ||
-          item.smallImageUrls?.[0] ||
-          null,
+          // アフィリエイトURLを優先
+          itemUrl:
+            item.affiliateUrl ||
+            item.itemUrl,
 
-        mediumImageUrls:
-          item.mediumImageUrls ??
-          [],
+          affiliateUrl:
+            item.affiliateUrl ||
+            null,
 
-        shopName:
-          item.shopName,
+          imageUrl:
+            item.mediumImageUrls?.[0] ||
+            item.smallImageUrls?.[0] ||
+            null,
 
-        pointRate:
-          Number(
-            item.pointRate ?? 1
-          ),
+          mediumImageUrls:
+            item.mediumImageUrls ??
+            [],
 
-        postageFlag:
-          item.postageFlag,
+          shopName:
+            item.shopName,
 
-        availability:
-          item.availability,
+          pointRate:
+            Number(
+              item.pointRate ?? 1
+            ),
 
-        affiliateRate:
-          item.affiliateRate,
+          postageFlag:
+            item.postageFlag,
 
-        genreId:
-          item.genreId,
+          availability:
+            item.availability,
 
-        genreName,
-      })
-    );
+          affiliateRate:
+            item.affiliateRate,
+
+          genreId:
+            item.genreId,
+
+          genreName:
+            theme.name,
+        })
+      );
+
+
+  // ---------------------------------------------------
+  // 結果
+  // ---------------------------------------------------
 
   return {
     key:
-      RANKING_THEMES.find(
-        (theme) =>
-          theme.genreId === genreId
-      )?.key ?? "",
+      theme.key,
 
-    genreId,
+    genreId:
+      theme.genreId,
 
-    genreName,
+    genreName:
+      theme.name,
 
-    emoji,
+    emoji:
+      theme.emoji,
 
     items,
   };
@@ -326,40 +375,51 @@ async function getRanking(
 
 export async function GET() {
   try {
-    // -----------------------------------------------
+
+    // -------------------------------------------------
     // 今日のテーマ
-    // -----------------------------------------------
+    // -------------------------------------------------
 
     const theme =
       getTodayTheme();
 
-    // -----------------------------------------------
-    // そのテーマだけ取得
-    // -----------------------------------------------
+
+    // -------------------------------------------------
+    // 今日のテーマだけ取得
+    //
+    // 7ジャンル全部を同時に取得しないことで
+    // 楽天APIの429対策にもなる
+    // -------------------------------------------------
 
     const ranking =
-      await getRanking(
-        theme.genreId,
-        theme.name,
-        theme.emoji
-      );
+      await getRanking(theme);
+
+
+    // -------------------------------------------------
+    // JSONを返す
+    // -------------------------------------------------
 
     return NextResponse.json(
       {
         status: 200,
 
         theme: {
-          key: theme.key,
-          name: theme.name,
-          emoji: theme.emoji,
+          key:
+            theme.key,
+
+          name:
+            theme.name,
+
+          emoji:
+            theme.emoji,
         },
 
         ranking,
       },
       {
         status: 200,
+
         headers: {
-          // ブラウザやCDNに長時間キャッシュさせない
           "Cache-Control":
             "no-store, max-age=0",
         },
@@ -372,6 +432,7 @@ export async function GET() {
       "楽天ランキング取得エラー:",
       error
     );
+
 
     return NextResponse.json(
       {
