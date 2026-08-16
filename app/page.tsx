@@ -25,29 +25,23 @@ type RankingData = {
 };
 
 export default function Home() {
-  const [keyword, setKeyword] =
-    useState("");
+  const [keyword, setKeyword] = useState("");
 
-  const [ranking, setRanking] =
-    useState<{
-      rakuten: RankingData | null;
-      yahoo: RankingData | null;
-    }>({
-      rakuten: null,
-      yahoo: null,
-    });
+  const [ranking, setRanking] = useState<{
+    rakuten: RankingData | null;
+    yahoo: RankingData | null;
+  }>({
+    rakuten: null,
+    yahoo: null,
+  });
 
-  const [theme, setTheme] =
-    useState<{
-      name: string;
-      emoji: string;
-    } | null>(null);
+  const [theme, setTheme] = useState<{
+    name: string;
+    emoji: string;
+  } | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // =====================================================
   // ランキング取得
@@ -59,38 +53,22 @@ export default function Home() {
         setLoading(true);
         setError("");
 
-        const res =
-          await fetch(
-            "/api/ranking",
-            {
-              cache: "no-store",
-            }
-          );
+        const res = await fetch("/api/ranking", {
+          cache: "no-store",
+        });
 
-        const data =
-          await res.json();
+        const data = await res.json();
 
-        if (
-          !res.ok ||
-          data.status !== 200
-        ) {
+        if (!res.ok || data.status !== 200) {
           throw new Error(
-            data.error ||
-              "ランキングの取得に失敗しました"
+            data.error || "ランキングの取得に失敗しました"
           );
         }
 
-        setRanking(
-          data.rankings
-        );
-
-        setTheme(
-          data.theme
-        );
+        setRanking(data.rankings);
+        setTheme(data.theme);
       } catch (error) {
-        console.error(
-          error
-        );
+        console.error(error);
 
         setError(
           "ランキングの取得に失敗しました。時間をおいて再度お試しください。"
@@ -108,15 +86,13 @@ export default function Home() {
   // =====================================================
 
   const search = () => {
-    const word =
-      keyword.trim();
+    const word = keyword.trim();
 
     if (!word) return;
 
-    window.location.href =
-      `/search?keyword=${encodeURIComponent(
-        word
-      )}`;
+    window.location.href = `/search?keyword=${encodeURIComponent(
+      word
+    )}`;
   };
 
   // =====================================================
@@ -137,97 +113,79 @@ export default function Home() {
 
     return (
       <div className="mt-4 space-y-4">
-        {ranking.items.map(
-          (item) => (
-            <div
-              key={`${type}-${ranking.genreId}-${item.rank}-${item.itemUrl}`}
-              className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-            >
-              <div className="flex gap-3">
+        {ranking.items.map((item) => (
+          <div
+            key={`${type}-${ranking.genreId}-${item.rank}-${item.itemUrl}`}
+            className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div className="flex gap-3">
 
-                {/* 順位 */}
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-400 font-bold text-gray-900">
-                  {item.rank}
-                </div>
+              {/* 順位 */}
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-400 font-bold text-gray-900">
+                {item.rank}
+              </div>
 
-                {/* 商品画像 */}
-                {item.imageUrl && (
-                  <img
-                    src={
-                      item.imageUrl
-                    }
-                    alt={
-                      item.itemName
-                    }
-                    className="h-20 w-20 shrink-0 rounded object-contain"
-                  />
-                )}
+              {/* 商品画像 */}
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt={item.itemName}
+                  className="h-20 w-20 shrink-0 rounded object-contain"
+                />
+              )}
 
-                {/* 商品情報 */}
-                <div className="min-w-0 flex-1">
+              {/* 商品情報 */}
+              <div className="min-w-0 flex-1">
 
-                  <h3 className="line-clamp-2 font-bold text-gray-900 dark:text-white">
-                    {item.itemName}
-                  </h3>
+                <h3 className="line-clamp-2 font-bold text-gray-900 dark:text-white">
+                  {item.itemName}
+                </h3>
 
-                  <p className="mt-1 text-xl font-bold text-red-600">
-                    ¥
-                    {item.itemPrice.toLocaleString()}
-                  </p>
+                <p className="mt-1 text-xl font-bold text-red-600">
+                  ¥{item.itemPrice.toLocaleString()}
+                </p>
 
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {item.shopName}
-                  </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {item.shopName}
+                </p>
 
-                  {/* Yahooレビュー */}
-                  {type ===
-                    "yahoo" &&
-                    item.reviewRate != null && (
-                      <p className="mt-1 text-sm text-yellow-600">
-                        ⭐{" "}
-                        {item.reviewRate}
-                        {" "}
-                        (
-                        {item.reviewCount?.toLocaleString()}
-                        件)
-                      </p>
-                    )}
-
-                  {/* 楽天送料 */}
-                  {type ===
-                    "rakuten" && (
-                    <p className="mt-1 text-sm font-bold text-gray-700 dark:text-gray-200">
-                      {item.postageFlag ===
-                      0
-                        ? "🟢 送料無料"
-                        : "🔴 送料別途"}
+                {/* Yahooレビュー */}
+                {type === "yahoo" &&
+                  item.reviewRate != null && (
+                    <p className="mt-1 text-sm text-yellow-600">
+                      ⭐ {item.reviewRate} (
+                      {item.reviewCount?.toLocaleString()}件)
                     </p>
                   )}
 
-                  <a
-                    href={
-                      item.itemUrl
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`mt-2 inline-block rounded-lg px-4 py-2 text-sm font-bold text-white ${
-                      type ===
-                      "rakuten"
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-orange-500 hover:bg-orange-600"
-                    }`}
-                  >
-                    {type ===
-                    "rakuten"
-                      ? "楽天で見る"
-                      : "Yahoo!で見る"}
-                  </a>
+                {/* 楽天送料 */}
+                {type === "rakuten" && (
+                  <p className="mt-1 text-sm font-bold text-gray-700 dark:text-gray-200">
+                    {item.postageFlag === 0
+                      ? "🟢 送料無料"
+                      : "🔴 送料別途"}
+                  </p>
+                )}
 
-                </div>
+                <a
+                  href={item.itemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`mt-2 inline-block rounded-lg px-4 py-2 text-sm font-bold text-white ${
+                    type === "rakuten"
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-orange-500 hover:bg-orange-600"
+                  }`}
+                >
+                  {type === "rakuten"
+                    ? "楽天で見る"
+                    : "Yahoo!で見る"}
+                </a>
+
               </div>
             </div>
-          )
-        )}
+          </div>
+        ))}
       </div>
     );
   };
@@ -247,7 +205,6 @@ export default function Home() {
         子育て世代のおトクを増やす。
       </p>
 
-
       {/* =================================================
           検索
       ================================================= */}
@@ -258,16 +215,9 @@ export default function Home() {
           type="text"
           placeholder="商品名を入力（例：はぐくみ）"
           value={keyword}
-          onChange={(e) =>
-            setKeyword(
-              e.target.value
-            )
-          }
+          onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={(e) => {
-            if (
-              e.key ===
-              "Enter"
-            ) {
+            if (e.key === "Enter") {
               e.preventDefault();
               search();
             }
@@ -285,7 +235,6 @@ export default function Home() {
 
       </div>
 
-
       {/* =================================================
           今日のランキング
       ================================================= */}
@@ -302,7 +251,6 @@ export default function Home() {
           楽天市場とYahoo!ショッピングのランキングから、人気商品を紹介します。
         </p>
 
-
         {/* ローディング */}
 
         {loading && (
@@ -311,67 +259,61 @@ export default function Home() {
           </div>
         )}
 
-
         {/* エラー */}
 
-        {error &&
-          !loading && (
-            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-6 text-center text-red-600 dark:border-red-900 dark:bg-red-950">
-              {error}
-            </div>
-          )}
-
+        {error && !loading && (
+          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-6 text-center text-red-600 dark:border-red-900 dark:bg-red-950">
+            {error}
+          </div>
+        )}
 
         {/* ランキング */}
 
-        {!loading &&
-          !error && (
-            <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        {!loading && !error && (
+          <div className="mt-8 grid gap-8 lg:grid-cols-2">
 
-              {/* =========================================
-                  楽天
-              ========================================= */}
+            {/* =========================================
+                楽天
+            ========================================= */}
 
-              <div>
+            <div>
 
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    🟥 楽天市場
-                  </h3>
-                </div>
-
-                {renderRanking(
-                  ranking.rakuten,
-                  "rakuten"
-                )}
-
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  🟥 楽天市場
+                </h3>
               </div>
 
-
-              {/* =========================================
-                  Yahoo!
-              ========================================= */}
-
-              <div>
-
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    🟧 Yahoo!ショッピング
-                  </h3>
-                </div>
-
-                {renderRanking(
-                  ranking.yahoo,
-                  "yahoo"
-                )}
-
-              </div>
+              {renderRanking(
+                ranking.rakuten,
+                "rakuten"
+              )}
 
             </div>
-          )}
+
+            {/* =========================================
+                Yahoo!
+            ========================================= */}
+
+            <div>
+
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  🟧 Yahoo!ショッピング
+                </h3>
+              </div>
+
+              {renderRanking(
+                ranking.yahoo,
+                "yahoo"
+              )}
+
+            </div>
+
+          </div>
+        )}
 
       </section>
-
 
       {/* =================================================
           APIクレジット
@@ -384,7 +326,6 @@ export default function Home() {
           {/* 楽天 */}
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-
             <a
               href="https://developers.rakuten.com/"
               target="_blank"
@@ -393,14 +334,11 @@ export default function Home() {
             >
               Supported by Rakuten Developers
             </a>
-
           </div>
-
 
           {/* Yahoo! JAPAN */}
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-
             <a
               href="https://developer.yahoo.co.jp/sitemap/"
               target="_blank"
@@ -409,11 +347,31 @@ export default function Home() {
             >
               Webサービス by Yahoo! JAPAN
             </a>
+          </div>
+
+          {/* =================================================
+              サイト情報
+          ================================================= */}
+
+          <div className="mt-4 flex flex-wrap justify-center gap-5 text-sm">
+
+            <a
+              href="/about"
+              className="text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              ベビトクについて
+            </a>
+
+            <a
+              href="/contact"
+              className="text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              お問い合わせ
+            </a>
 
           </div>
 
-
-          <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             © ベビトク
           </p>
 
