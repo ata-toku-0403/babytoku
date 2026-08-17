@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 type RankingItem = {
@@ -79,9 +81,9 @@ export default function Home() {
     getRankings();
   }, []);
 
-  // =====================================================
+  // ====================================================
   // 検索
-  // =====================================================
+  // ====================================================
 
   const search = () => {
     const word = keyword.trim();
@@ -93,9 +95,9 @@ export default function Home() {
     )}`;
   };
 
-  // =====================================================
+  // ====================================================
   // ランキング表示
-  // =====================================================
+  // ====================================================
 
   const renderRanking = (
     ranking: RankingData | null,
@@ -168,7 +170,7 @@ export default function Home() {
                   </p>
                 )}
 
-                {/* 今までボタンに見えていた部分 */}
+                {/* 移動ボタン風表示 */}
                 <span
                   className={`mt-2 inline-block rounded-lg px-4 py-2 text-sm font-bold text-white ${
                     type === "rakuten"
@@ -391,6 +393,7 @@ export default function Home() {
         </div>
 
       </footer>
+
     </main>
   );
 }
