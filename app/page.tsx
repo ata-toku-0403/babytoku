@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 
 type RankingItem = {
@@ -114,9 +112,12 @@ export default function Home() {
     return (
       <div className="mt-4 space-y-4">
         {ranking.items.map((item) => (
-          <div
+          <a
             key={`${type}-${ranking.genreId}-${item.rank}-${item.itemUrl}`}
-            className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+            href={item.itemUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-xl border border-gray-200 bg-white p-4 transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
           >
             <div className="flex gap-3">
 
@@ -167,24 +168,22 @@ export default function Home() {
                   </p>
                 )}
 
-                <a
-                  href={item.itemUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                {/* 今までボタンに見えていた部分 */}
+                <span
                   className={`mt-2 inline-block rounded-lg px-4 py-2 text-sm font-bold text-white ${
                     type === "rakuten"
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-orange-500 hover:bg-orange-600"
+                      ? "bg-red-500"
+                      : "bg-orange-500"
                   }`}
                 >
                   {type === "rakuten"
                     ? "楽天で見る"
                     : "Yahoo!で見る"}
-                </a>
+                </span>
 
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     );
@@ -204,6 +203,7 @@ export default function Home() {
       <p className="mt-2 text-gray-600 dark:text-gray-300">
         子育て世代のおトクを増やす。
       </p>
+
 
       {/* =================================================
           検索
@@ -235,6 +235,7 @@ export default function Home() {
 
       </div>
 
+
       {/* =================================================
           今日のランキング
       ================================================= */}
@@ -251,6 +252,7 @@ export default function Home() {
           楽天市場とYahoo!ショッピングのランキングから、人気商品を紹介します。
         </p>
 
+
         {/* ローディング */}
 
         {loading && (
@@ -259,6 +261,7 @@ export default function Home() {
           </div>
         )}
 
+
         {/* エラー */}
 
         {error && !loading && (
@@ -266,6 +269,7 @@ export default function Home() {
             {error}
           </div>
         )}
+
 
         {/* ランキング */}
 
@@ -291,6 +295,7 @@ export default function Home() {
 
             </div>
 
+
             {/* =========================================
                 Yahoo!
             ========================================= */}
@@ -315,6 +320,7 @@ export default function Home() {
 
       </section>
 
+
       {/* =================================================
           APIクレジット
       ================================================= */}
@@ -326,6 +332,7 @@ export default function Home() {
           {/* 楽天 */}
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
+
             <a
               href="https://developers.rakuten.com/"
               target="_blank"
@@ -334,11 +341,14 @@ export default function Home() {
             >
               Supported by Rakuten Developers
             </a>
+
           </div>
+
 
           {/* Yahoo! JAPAN */}
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
+
             <a
               href="https://developer.yahoo.co.jp/sitemap/"
               target="_blank"
@@ -347,7 +357,9 @@ export default function Home() {
             >
               Webサービス by Yahoo! JAPAN
             </a>
+
           </div>
+
 
           {/* =================================================
               サイト情報
@@ -370,6 +382,7 @@ export default function Home() {
             </a>
 
           </div>
+
 
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             © ベビトク
