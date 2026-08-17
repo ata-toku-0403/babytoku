@@ -41,9 +41,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // =====================================================
+  // ====================================================
   // ランキング取得
-  // =====================================================
+  // ====================================================
 
   useEffect(() => {
     const getRankings = async () => {
@@ -391,7 +391,6 @@ export default function Home() {
         </div>
 
       </footer>
-
     </main>
   );
 }
