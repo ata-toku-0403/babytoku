@@ -1,7 +1,9 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 
 // =====================================================
-// 商品名から数量を取得
+// 商品名から数量・重量を取得
 // =====================================================
 
 function getWeight(name: string) {
@@ -10,6 +12,7 @@ function getWeight(name: string) {
   // 「68枚×4個」
   // 「68枚入り × 4パック」
   // ---------------------------------------------------
+
   const packMatch = name.match(
     /(\d+)\s*枚(?:入り)?\s*[×x＊*]\s*(\d+)\s*(?:個|パック|袋|ケース)?/i
   );
@@ -26,14 +29,22 @@ function getWeight(name: string) {
   // 「600g × 2個」
   // 「1kg×2」
   // ---------------------------------------------------
+
   const weightPackMatch = name.match(
     /(\d+(?:\.\d+)?)\s*(g|kg)\s*[×x＊*]\s*(\d+)\s*(?:個|パック|袋|ケース)?/i
   );
 
   if (weightPackMatch) {
-    const value = Number(weightPackMatch[1]);
-    const unit = weightPackMatch[2].toLowerCase();
-    const count = Number(weightPackMatch[3]);
+    const value = Number(
+      weightPackMatch[1]
+    );
+
+    const unit =
+      weightPackMatch[2].toLowerCase();
+
+    const count = Number(
+      weightPackMatch[3]
+    );
 
     const weight =
       unit === "kg"
@@ -47,17 +58,21 @@ function getWeight(name: string) {
   // 「132枚」
   // 「68枚入り」
   // ---------------------------------------------------
+
   const diaperMatch =
     name.match(/(\d+)\s*枚/i);
 
   if (diaperMatch) {
-    return Number(diaperMatch[1]);
+    return Number(
+      diaperMatch[1]
+    );
   }
 
   // ---------------------------------------------------
   // 「600g」
   // 「1kg」
   // ---------------------------------------------------
+
   const weightMatch = name.match(
     /(\d+(?:\.\d+)?)\s*(g|kg)/i
   );
@@ -66,8 +81,9 @@ function getWeight(name: string) {
     return null;
   }
 
-  const value =
-    Number(weightMatch[1]);
+  const value = Number(
+    weightMatch[1]
+  );
 
   const unit =
     weightMatch[2].toLowerCase();
@@ -432,7 +448,9 @@ export default function SearchPage() {
     return (
       <a
         key={index}
-        href={item.Item.itemUrl}
+        href={
+          item.Item.itemUrl
+        }
         target="_blank"
         rel="noopener noreferrer"
         className="block rounded-xl border border-gray-200 bg-white p-4 transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
@@ -440,6 +458,7 @@ export default function SearchPage() {
         <div className="flex gap-4">
 
           {/* 商品画像 */}
+
           <img
             src={
               item.Item
@@ -454,6 +473,7 @@ export default function SearchPage() {
 
 
           {/* 商品情報 */}
+
           <div className="flex min-w-0 flex-1 flex-col justify-between">
 
             <div>
@@ -502,6 +522,7 @@ export default function SearchPage() {
 
 
               {/* 単価 */}
+
               {unitPrice !== null && (
                 <p className="mt-1 font-bold text-purple-600">
                   単価：¥
@@ -515,6 +536,7 @@ export default function SearchPage() {
 
 
             {/* 今までのボタン */}
+
             <span
               className={`mt-4 inline-block rounded-lg px-4 py-2 text-center text-white ${
                 item.Item.shop ===
