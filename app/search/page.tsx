@@ -3,16 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 // =====================================================
-// 商品名から数量・重量を取得
+// 商品名から総量を取得
 // =====================================================
 
 function getWeight(name: string) {
   // ---------------------------------------------------
-  // 「68枚入り×4個」
-  // 「68枚×4個」
-  // 「68枚入り × 4パック」
+  // ① 「68枚入り×4個」
+  //    「68枚×4個」
+  //    「68枚入り × 4パック」
   // ---------------------------------------------------
-
   const packMatch = name.match(
     /(\d+)\s*枚(?:入り)?\s*[×x＊*]\s*(\d+)\s*(?:個|パック|袋|ケース)?/i
   );
@@ -25,26 +24,23 @@ function getWeight(name: string) {
   }
 
   // ---------------------------------------------------
-  // 「600g×2」
-  // 「600g × 2個」
-  // 「1kg×2」
+  // ② 「600g×2」
+  //    「600g × 2個」
+  //    「1kg×2」
   // ---------------------------------------------------
-
   const weightPackMatch = name.match(
     /(\d+(?:\.\d+)?)\s*(g|kg)\s*[×x＊*]\s*(\d+)\s*(?:個|パック|袋|ケース)?/i
   );
 
   if (weightPackMatch) {
-    const value = Number(
-      weightPackMatch[1]
-    );
+    const value =
+      Number(weightPackMatch[1]);
 
     const unit =
       weightPackMatch[2].toLowerCase();
 
-    const count = Number(
-      weightPackMatch[3]
-    );
+    const count =
+      Number(weightPackMatch[3]);
 
     const weight =
       unit === "kg"
@@ -55,12 +51,66 @@ function getWeight(name: string) {
   }
 
   // ---------------------------------------------------
-  // 「132枚」
-  // 「68枚入り」
+  // ③ 「2個セット 600g」
+  //    「2個セット 600g ベビーローション」
+  //    「3個セット 1kg」
   // ---------------------------------------------------
+  const setMatch = name.match(
+    /(\d+)\s*個セット.*?(\d+(?:\.\d+)?)\s*(g|kg)/i
+  );
 
+  if (setMatch) {
+    const count =
+      Number(setMatch[1]);
+
+    const value =
+      Number(setMatch[2]);
+
+    const unit =
+      setMatch[3].toLowerCase();
+
+    const weight =
+      unit === "kg"
+        ? value * 1000
+        : value;
+
+    return weight * count;
+  }
+
+  // ---------------------------------------------------
+  // ④ 「600g 2個」
+  //    「600g 2パック」
+  // ---------------------------------------------------
+  const weightCountMatch = name.match(
+    /(\d+(?:\.\d+)?)\s*(g|kg)\s*(\d+)\s*(?:個|パック|袋|ケース)/i
+  );
+
+  if (weightCountMatch) {
+    const value =
+      Number(weightCountMatch[1]);
+
+    const unit =
+      weightCountMatch[2].toLowerCase();
+
+    const count =
+      Number(weightCountMatch[3]);
+
+    const weight =
+      unit === "kg"
+        ? value * 1000
+        : value;
+
+    return weight * count;
+  }
+
+  // ---------------------------------------------------
+  // ⑤ 「132枚」
+  //    「68枚入り」
+  // ---------------------------------------------------
   const diaperMatch =
-    name.match(/(\d+)\s*枚/i);
+    name.match(
+      /(\d+)\s*枚/i
+    );
 
   if (diaperMatch) {
     return Number(
@@ -69,21 +119,20 @@ function getWeight(name: string) {
   }
 
   // ---------------------------------------------------
-  // 「600g」
-  // 「1kg」
+  // ⑥ 「600g」
+  //    「1kg」
   // ---------------------------------------------------
-
-  const weightMatch = name.match(
-    /(\d+(?:\.\d+)?)\s*(g|kg)/i
-  );
+  const weightMatch =
+    name.match(
+      /(\d+(?:\.\d+)?)\s*(g|kg)/i
+    );
 
   if (!weightMatch) {
     return null;
   }
 
-  const value = Number(
-    weightMatch[1]
-  );
+  const value =
+    Number(weightMatch[1]);
 
   const unit =
     weightMatch[2].toLowerCase();
@@ -205,7 +254,8 @@ export default function SearchPage() {
                 item.Item.itemUrl,
 
               mediumImageUrls:
-                item.Item.mediumImageUrls,
+                item.Item
+                  .mediumImageUrls,
 
               pointRate:
                 item.Item.pointRate ??
@@ -216,9 +266,11 @@ export default function SearchPage() {
                   Number(
                     item.Item.itemPrice
                   ) *
-                    (item.Item
-                      .pointRate ??
-                      1) /
+                    (
+                      item.Item
+                        .pointRate ??
+                      1
+                    ) /
                     100
                 ),
 
@@ -227,7 +279,8 @@ export default function SearchPage() {
                   item.Item.itemName
                 ),
 
-              shop: "楽天",
+              shop:
+                "楽天",
 
               shipping:
                 item.Item
