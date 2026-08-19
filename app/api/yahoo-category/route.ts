@@ -113,10 +113,18 @@ async function getYahooCategory(
 
   // ---------------------------------------------------
   // レスポンス確認
+  //
+  // Yahoo!カテゴリAPIは
+  //
+  // ResultSet
+  //   └─ "0"
+  //       └─ Result
+  //
+  // という構造で返ってくる
   // ---------------------------------------------------
 
   const result =
-    data?.ResultSet?.Result;
+    data?.ResultSet?.["0"]?.Result;
 
   if (!result) {
     throw new Error(
@@ -166,20 +174,44 @@ async function getYahooCategory(
 
   // ---------------------------------------------------
   // 子カテゴリ
+  //
+  // Yahoo!は
+  //
+  // Children
+  //   ├─ "0"
+  //   ├─ "1"
+  //   ├─ "2"
+  //   └─ ...
+  //
+  // というオブジェクト形式で返す
   // ---------------------------------------------------
 
   const childrenRaw =
-    categories.Children?.Child ??
-    [];
+    categories.Children;
 
 
-  // 1件の場合はオブジェクト、
-  // 複数の場合は配列になる可能性があるため
-  // 必ず配列にする
-  const childrenArray =
-    Array.isArray(childrenRaw)
-      ? childrenRaw
-      : [childrenRaw];
+  let childrenArray: any[] = [];
+
+
+  if (childrenRaw) {
+
+    if (
+      Array.isArray(
+        childrenRaw
+      )
+    ) {
+
+      childrenArray =
+        childrenRaw;
+
+    } else {
+
+      childrenArray =
+        Object.values(
+          childrenRaw
+        );
+    }
+  }
 
 
   const children =
@@ -278,6 +310,7 @@ export async function GET(
       ) ||
       categoryId <= 0
     ) {
+
       return NextResponse.json(
         {
           status: 400,
