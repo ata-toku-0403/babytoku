@@ -1,196 +1,357 @@
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+// =====================================================
+// Yahoo!カテゴリ確認用API
+//
+// 使い方:
+//
+// /api/yahoo-categories
+// → 2497 の子カテゴリを表示
+//
+// /api/yahoo-categories?categoryId=41607
+// → 41607 の子カテゴリを表示
+//
+// /api/yahoo-categories?categoryId=2497
+// → 2497 の子カテゴリを表示
+//
+// 使用する環境変数
+// YAHOO_APP_ID
+// =====================================================
+
+
+// =====================================================
+// Yahoo!カテゴリ取得
+// =====================================================
+
+async function getYahooCategory(
+  categoryId: number
+) {
+  // ---------------------------------------------------
+  // アプリケーションID
+  // ---------------------------------------------------
+
+  const appId =
+    process.env.YAHOO_APP_ID;
+
+  if (!appId) {
+    throw new Error(
+      "YAHOO_APP_ID が設定されていません"
+    );
+  }
+
+
+  // ---------------------------------------------------
+  // パラメータ
+  // ---------------------------------------------------
+
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "appid",
+    appId
+  );
+
+  params.set(
+    "category_id",
+    String(categoryId)
+  );
+
+  params.set(
+    "output",
+    "json"
+  );
+
+
+  // ---------------------------------------------------
+  // Yahoo!カテゴリAPI
+  // ---------------------------------------------------
+
+  const url =
+    "https://shopping.yahooapis.jp/ShoppingWebService/V1/categorySearch?" +
+    params.toString();
+
+
+  const res =
+    await fetch(
+      url,
+      {
+        cache: "no-store",
+      }
+    );
+
+
+  const text =
+    await res.text();
+
+
+  // ---------------------------------------------------
+  // HTTPエラー
+  // ---------------------------------------------------
+
+  if (!res.ok) {
+    throw new Error(
+      `Yahoo!カテゴリAPIエラー: ${res.status} ${text}`
+    );
+  }
+
+
+  // ---------------------------------------------------
+  // JSON解析
+  // ---------------------------------------------------
+
+  let data: any;
+
   try {
-    const { searchParams } = new URL(request.url);
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(
+      "Yahoo!カテゴリAPIのJSON解析に失敗しました"
+    );
+  }
 
-    // 例：
-    // /api/yahoo-category?keyword=粉ミルク
-    const keyword =
-      searchParams.get("keyword") || "粉ミルク";
 
-    const appId =
-      process.env.YAHOO_APP_ID;
+  // ---------------------------------------------------
+  // レスポンス確認
+  // ---------------------------------------------------
 
-    if (!appId) {
-      return NextResponse.json(
-        {
-          status: 500,
-          error:
-            "YAHOO_APP_ID が設定されていません",
-        },
-        { status: 500 }
-      );
-    }
+  const result =
+    data?.ResultSet?.Result;
 
-    // =====================================================
-    // Yahoo! 商品検索API
-    // =====================================================
+  if (!result) {
+    throw new Error(
+      `Yahoo!カテゴリAPIのレスポンスが不正です: ${text}`
+    );
+  }
 
-    const params = new URLSearchParams();
 
-    params.set("appid", appId);
-    params.set("query", keyword);
+  const categories =
+    result.Categories;
 
-    // カテゴリ情報を確認したいので少し多めに取得
-    params.set("results", "20");
+  if (!categories) {
+    throw new Error(
+      `カテゴリ情報が見つかりません: ${categoryId}`
+    );
+  }
 
-    // 画像は不要なので指定しない
-    const url =
-      `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch?${params.toString()}`;
 
-    const response = await fetch(url, {
-      cache: "no-store",
-    });
+  // ---------------------------------------------------
+  // 現在のカテゴリ
+  // ---------------------------------------------------
 
-    const data = await response.json();
+  const current =
+    categories.Current;
 
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          status: response.status,
-          error:
-            "Yahoo! APIからエラーが返されました",
-          detail: data,
-        },
-        { status: response.status }
-      );
-    }
 
-    // =====================================================
-    // 確認用に必要な情報だけ取り出す
-    // =====================================================
+  const currentId =
+    Number(
+      current?.Id ??
+      categoryId
+    );
 
-    const items = (data.hits ?? []).map(
-      (item: any) => ({
-        index: item.index,
 
-        name: item.name,
+  const currentName =
+    current?.Title?.Short ??
+    current?.Title?.Medium ??
+    current?.Title?.Long ??
+    "";
 
-        price: item.price,
 
-        url: item.url,
+  const parentId =
+    Number(
+      current?.ParentId ??
+      0
+    );
 
-        // -----------------------------
-        // 現在の商品カテゴリ
-        // -----------------------------
 
-        genreCategory: {
+  // ---------------------------------------------------
+  // 子カテゴリ
+  // ---------------------------------------------------
+
+  const childrenRaw =
+    categories.Children?.Child ??
+    [];
+
+
+  // 1件の場合はオブジェクト、
+  // 複数の場合は配列になる可能性があるため
+  // 必ず配列にする
+  const childrenArray =
+    Array.isArray(childrenRaw)
+      ? childrenRaw
+      : [childrenRaw];
+
+
+  const children =
+    childrenArray
+      .filter(Boolean)
+      .map(
+        (child: any) => ({
           id:
-            item.genreCategory?.id ??
-            null,
+            Number(
+              child.Id
+            ),
 
           name:
-            item.genreCategory?.name ??
-            null,
+            child.Title?.Short ??
+            child.Title?.Medium ??
+            child.Title?.Long ??
+            "",
 
-          depth:
-            item.genreCategory?.depth ??
-            null,
-        },
+          parentId:
+            currentId,
 
-        // -----------------------------
-        // 親カテゴリ
-        // -----------------------------
-
-        parentGenreCategories:
-          item.parentGenreCategories ??
-          [],
-      })
-    );
-
-    // =====================================================
-    // カテゴリごとにまとめる
-    // =====================================================
-
-    const categoryMap =
-      new Map<
-        number,
-        {
-          id: number;
-          name: string;
-          depth: number | null;
-          count: number;
-        }
-      >();
-
-    for (const item of items) {
-      const category =
-        item.genreCategory;
-
-      if (!category.id) continue;
-
-      const existing =
-        categoryMap.get(
-          category.id
-        );
-
-      if (existing) {
-        existing.count += 1;
-      } else {
-        categoryMap.set(
-          category.id,
-          {
-            id: category.id,
-            name:
-              category.name || "",
-            depth:
-              category.depth ??
-              null,
-            count: 1,
-          }
-        );
-      }
-    }
-
-    const categories =
-      Array.from(
-        categoryMap.values()
-      ).sort(
-        (a, b) =>
-          b.count - a.count
+          url:
+            child.Url ??
+            "",
+        })
       );
 
-    // =====================================================
-    // レスポンス
-    // =====================================================
 
-    return NextResponse.json({
-      status: 200,
+  // ===================================================
+  // 結果
+  // ===================================================
 
-      keyword,
+  return {
+    current: {
+      id:
+        currentId,
 
-      totalResultsAvailable:
-        data.totalResultsAvailable ??
-        0,
+      name:
+        currentName,
 
-      totalResultsReturned:
-        data.totalResultsReturned ??
-        0,
+      parentId:
+        parentId,
+    },
 
-      // 商品ごとのカテゴリ
-      items,
+    children,
+  };
+}
 
-      // 検索結果に多く登場したカテゴリ
-      categories,
-    });
+
+// =====================================================
+// GET
+// =====================================================
+
+export async function GET(
+  request: Request
+) {
+
+  try {
+
+    // -------------------------------------------------
+    // URLパラメータ
+    //
+    // 例:
+    // ?categoryId=2497
+    // -------------------------------------------------
+
+    const { searchParams } =
+      new URL(request.url);
+
+
+    const categoryIdParam =
+      searchParams.get(
+        "categoryId"
+      );
+
+
+    // -------------------------------------------------
+    // 指定がなければ2497
+    // -------------------------------------------------
+
+    const categoryId =
+      categoryIdParam
+        ? Number(
+            categoryIdParam
+          )
+        : 2497;
+
+
+    // -------------------------------------------------
+    // 数値チェック
+    // -------------------------------------------------
+
+    if (
+      !Number.isInteger(
+        categoryId
+      ) ||
+      categoryId <= 0
+    ) {
+      return NextResponse.json(
+        {
+          status: 400,
+
+          error:
+            "categoryId は正の整数で指定してください",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+
+    // -------------------------------------------------
+    // Yahoo!から取得
+    // -------------------------------------------------
+
+    const result =
+      await getYahooCategory(
+        categoryId
+      );
+
+
+    // -------------------------------------------------
+    // JSONで返す
+    // -------------------------------------------------
+
+    return NextResponse.json(
+      {
+        status: 200,
+
+        categoryId:
+          categoryId,
+
+        current:
+          result.current,
+
+        children:
+          result.children,
+
+        childrenCount:
+          result.children.length,
+      },
+      {
+        status: 200,
+
+        headers: {
+          "Cache-Control":
+            "no-store, max-age=0",
+        },
+      }
+    );
+
   } catch (error) {
+
     console.error(
-      "Yahoo category check error:",
+      "Yahoo!カテゴリ取得エラー:",
       error
     );
+
 
     return NextResponse.json(
       {
         status: 500,
+
         error:
-          "Yahoo!カテゴリ確認中にエラーが発生しました",
-        detail:
           error instanceof Error
             ? error.message
-            : String(error),
+            : "Yahoo!カテゴリ取得に失敗しました",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
