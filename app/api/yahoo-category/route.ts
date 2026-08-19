@@ -215,10 +215,14 @@ async function getYahooCategory(
 
 
   const children =
-    childrenArray
-      .filter(Boolean)
-      .map(
-        (child: any) => ({
+  childrenArray
+    .filter(
+      (child: any) =>
+        child &&
+        child.Id
+    )
+    .map(
+      (child: any) => ({
           id:
             Number(
               child.Id
