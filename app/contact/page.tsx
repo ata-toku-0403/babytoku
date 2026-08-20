@@ -8,7 +8,7 @@ export default function ContactPage() {
 
       <a
         href="/"
-        className="inline-block text-3xl font-bold text-gray-900 hover:opacity-70 dark:text-white"
+        className="text-3xl font-bold text-gray-900 hover:underline dark:text-white hover:opacity-70"
       >
         ベビトク
       </a>
@@ -89,13 +89,13 @@ export default function ContactPage() {
           トップへ戻る
       ================================================= */}
 
-      <div className="mt-8 text-center">
+      <div className="mt-10">
 
         <a
           href="/"
-          className="text-sm font-bold text-blue-600 underline hover:text-blue-800 dark:text-blue-400"
+          className="inline-block rounded-lg border border-gray-300 px-5 py-3 font-bold text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
         >
-          ベビトクのトップページへ戻る
+          ← トップページへ戻る
         </a>
 
       </div>
