@@ -198,9 +198,14 @@ export default function Home() {
           タイトル
       ================================================= */}
 
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-        ベビトク
-      </h1>
+      <a
+        href="/"
+        className="inline-block"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white hover:opacity-70">
+          ベビトク
+        </h1>
+      </a>
 
       <p className="mt-2 text-gray-600 dark:text-gray-300">
         子育て世代のおトクを増やす。

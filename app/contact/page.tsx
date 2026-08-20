@@ -2,8 +2,27 @@ export default function ContactPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
 
-      {/* タイトル */}
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      {/* =================================================
+          サイトタイトル
+      ================================================= */}
+
+      <a
+        href="/"
+        className="inline-block text-3xl font-bold text-gray-900 hover:opacity-70 dark:text-white"
+      >
+        ベビトク
+      </a>
+
+      <p className="mt-2 text-gray-600 dark:text-gray-300">
+        子育て世代のおトクを増やす。
+      </p>
+
+
+      {/* =================================================
+          タイトル
+      ================================================= */}
+
+      <h1 className="mt-8 text-3xl font-bold text-gray-900 dark:text-white">
         お問い合わせ
       </h1>
 
@@ -17,7 +36,11 @@ export default function ContactPage() {
         下記のフォームからお知らせください。
       </p>
 
-      {/* Googleフォーム */}
+
+      {/* =================================================
+          Googleフォーム
+      ================================================= */}
+
       <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
 
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -40,7 +63,11 @@ export default function ContactPage() {
 
       </div>
 
-      {/* 注意事項 */}
+
+      {/* =================================================
+          注意事項
+      ================================================= */}
+
       <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900">
 
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -57,7 +84,11 @@ export default function ContactPage() {
 
       </div>
 
-      {/* トップへ戻る */}
+
+      {/* =================================================
+          トップへ戻る
+      ================================================= */}
+
       <div className="mt-8 text-center">
 
         <a

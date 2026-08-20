@@ -17,10 +17,7 @@ function getWeight(name: string) {
   );
 
   if (packMatch) {
-    return (
-      Number(packMatch[1]) *
-      Number(packMatch[2])
-    );
+    return Number(packMatch[1]) * Number(packMatch[2]);
   }
 
   // ---------------------------------------------------
@@ -33,19 +30,11 @@ function getWeight(name: string) {
   );
 
   if (weightPackMatch) {
-    const value =
-      Number(weightPackMatch[1]);
+    const value = Number(weightPackMatch[1]);
+    const unit = weightPackMatch[2].toLowerCase();
+    const count = Number(weightPackMatch[3]);
 
-    const unit =
-      weightPackMatch[2].toLowerCase();
-
-    const count =
-      Number(weightPackMatch[3]);
-
-    const weight =
-      unit === "kg"
-        ? value * 1000
-        : value;
+    const weight = unit === "kg" ? value * 1000 : value;
 
     return weight * count;
   }
@@ -60,19 +49,11 @@ function getWeight(name: string) {
   );
 
   if (setMatch) {
-    const count =
-      Number(setMatch[1]);
+    const count = Number(setMatch[1]);
+    const value = Number(setMatch[2]);
+    const unit = setMatch[3].toLowerCase();
 
-    const value =
-      Number(setMatch[2]);
-
-    const unit =
-      setMatch[3].toLowerCase();
-
-    const weight =
-      unit === "kg"
-        ? value * 1000
-        : value;
+    const weight = unit === "kg" ? value * 1000 : value;
 
     return weight * count;
   }
@@ -86,19 +67,11 @@ function getWeight(name: string) {
   );
 
   if (weightCountMatch) {
-    const value =
-      Number(weightCountMatch[1]);
+    const value = Number(weightCountMatch[1]);
+    const unit = weightCountMatch[2].toLowerCase();
+    const count = Number(weightCountMatch[3]);
 
-    const unit =
-      weightCountMatch[2].toLowerCase();
-
-    const count =
-      Number(weightCountMatch[3]);
-
-    const weight =
-      unit === "kg"
-        ? value * 1000
-        : value;
+    const weight = unit === "kg" ? value * 1000 : value;
 
     return weight * count;
   }
@@ -107,35 +80,26 @@ function getWeight(name: string) {
   // ⑤ 「132枚」
   //    「68枚入り」
   // ---------------------------------------------------
-  const diaperMatch =
-    name.match(
-      /(\d+)\s*枚/i
-    );
+  const diaperMatch = name.match(/(\d+)\s*枚/i);
 
   if (diaperMatch) {
-    return Number(
-      diaperMatch[1]
-    );
+    return Number(diaperMatch[1]);
   }
 
   // ---------------------------------------------------
   // ⑥ 「600g」
   //    「1kg」
   // ---------------------------------------------------
-  const weightMatch =
-    name.match(
-      /(\d+(?:\.\d+)?)\s*(g|kg)/i
-    );
+  const weightMatch = name.match(
+    /(\d+(?:\.\d+)?)\s*(g|kg)/i
+  );
 
   if (!weightMatch) {
     return null;
   }
 
-  const value =
-    Number(weightMatch[1]);
-
-  const unit =
-    weightMatch[2].toLowerCase();
+  const value = Number(weightMatch[1]);
+  const unit = weightMatch[2].toLowerCase();
 
   if (unit === "kg") {
     return value * 1000;
@@ -150,23 +114,17 @@ function getWeight(name: string) {
 // =====================================================
 
 export default function SearchPage() {
-  const [keyword, setKeyword] =
-    useState("");
+  const [keyword, setKeyword] = useState("");
 
-  const [searchWord, setSearchWord] =
-    useState("");
+  const [searchWord, setSearchWord] = useState("");
 
-  const [items, setItems] =
-    useState<any[]>([]);
+  const [items, setItems] = useState<any[]>([]);
 
-  const [totalCount, setTotalCount] =
-    useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
 
   // =====================================================
@@ -174,13 +132,11 @@ export default function SearchPage() {
   // =====================================================
 
   useEffect(() => {
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+    const params = new URLSearchParams(
+      window.location.search
+    );
 
-    const word =
-      params.get("keyword") || "";
+    const word = params.get("keyword") || "";
 
     if (!word) {
       return;
@@ -198,8 +154,7 @@ export default function SearchPage() {
   // =====================================================
 
   async function search(word: string) {
-    const trimmedWord =
-      word.trim();
+    const trimmedWord = word.trim();
 
     if (!trimmedWord) {
       return;
@@ -209,23 +164,20 @@ export default function SearchPage() {
     setError("");
 
     try {
-      const res =
-        await fetch(
-          `/api/search?keyword=${encodeURIComponent(
-            trimmedWord
-          )}`,
-          {
-            cache: "no-store",
-          }
-        );
+      const res = await fetch(
+        `/api/search?keyword=${encodeURIComponent(
+          trimmedWord
+        )}`,
+        {
+          cache: "no-store",
+        }
+      );
 
-      const data =
-        await res.json();
+      const data = await res.json();
 
       if (!res.ok) {
         throw new Error(
-          data.error ||
-            "検索に失敗しました"
+          data.error || "検索に失敗しました"
         );
       }
 
@@ -234,119 +186,105 @@ export default function SearchPage() {
       // 楽天
       // =================================================
 
-      const rakutenItems =
-        (
-          data.rakuten?.Items ??
-          []
-        ).map(
-          (item: any) => ({
-            Item: {
-              itemName:
-                item.Item.itemName,
+      const rakutenItems = (
+        data.rakuten?.Items ?? []
+      ).map(
+        (item: any) => ({
+          Item: {
+            itemName:
+              item.Item.itemName,
 
-              itemPrice:
+            itemPrice:
+              Number(
+                item.Item.itemPrice
+              ),
+
+            itemUrl:
+              item.Item.affiliateUrl ||
+              item.Item.itemUrl,
+
+            mediumImageUrls:
+              item.Item.mediumImageUrls,
+
+            pointRate:
+              item.Item.pointRate ?? 1,
+
+            pointAmount:
+              Math.floor(
                 Number(
                   item.Item.itemPrice
-                ),
+                ) *
+                  (item.Item.pointRate ?? 1) /
+                  100
+              ),
 
-              itemUrl:
-                item.Item.affiliateUrl ||
-                item.Item.itemUrl,
+            weight:
+              getWeight(
+                item.Item.itemName
+              ),
 
-              mediumImageUrls:
-                item.Item
-                  .mediumImageUrls,
+            shop:
+              "楽天",
 
-              pointRate:
-                item.Item.pointRate ??
-                1,
-
-              pointAmount:
-                Math.floor(
-                  Number(
-                    item.Item.itemPrice
-                  ) *
-                    (
-                      item.Item
-                        .pointRate ??
-                      1
-                    ) /
-                    100
-                ),
-
-              weight:
-                getWeight(
-                  item.Item.itemName
-                ),
-
-              shop:
-                "楽天",
-
-              shipping:
-                item.Item
-                  .postageFlag ===
-                0
-                  ? "送料無料"
-                  : "送料別途",
-            },
-          })
-        );
+            shipping:
+              item.Item.postageFlag === 0
+                ? "送料無料"
+                : "送料別途",
+          },
+        })
+      );
 
 
       // =================================================
       // Yahoo!
       // =================================================
 
-      const yahooItems =
-        (
-          data.yahoo?.hits ??
-          []
-        ).map(
-          (item: any) => ({
-            Item: {
-              itemName:
-                item.name,
+      const yahooItems = (
+        data.yahoo?.hits ?? []
+      ).map(
+        (item: any) => ({
+          Item: {
+            itemName:
+              item.name,
 
-              itemPrice:
-                Number(
-                  item.price
-                ),
+            itemPrice:
+              Number(
+                item.price
+              ),
 
-              itemUrl:
-                item.url,
+            itemUrl:
+              item.url,
 
-              mediumImageUrls: [
-                {
-                  imageUrl:
-                    item.image?.medium,
-                },
-              ],
+            mediumImageUrls: [
+              {
+                imageUrl:
+                  item.image?.medium,
+              },
+            ],
 
-              pointRate:
-                0,
+            pointRate:
+              0,
 
-              pointAmount:
-                item.point
-                  ?.lyLimitedBonusAmount ??
-                0,
+            pointAmount:
+              item.point
+                ?.lyLimitedBonusAmount ?? 0,
 
-              weight:
-                getWeight(
-                  item.name
-                ),
+            weight:
+              getWeight(
+                item.name
+              ),
 
-              shop:
-                "Yahoo!ショッピング",
+            shop:
+              "Yahoo!ショッピング",
 
-              shipping:
-                item.shipping
-                  ?.name ===
-                "送料無料"
-                  ? "送料無料"
-                  : "送料別途",
-            },
-          })
-        );
+            shipping:
+              item.shipping?.name ===
+              "送料無料"
+                ? "送料無料"
+                : "送料別途",
+          },
+        })
+      );
 
 
       // =================================================
@@ -423,9 +361,7 @@ export default function SearchPage() {
 
   const cheapest =
     useMemo(() => {
-      if (
-        items.length === 0
-      ) {
+      if (items.length === 0) {
         return null;
       }
 
@@ -456,25 +392,23 @@ export default function SearchPage() {
   // 検索ボタン
   // =====================================================
 
-  const handleSearch =
-    () => {
-      const word =
-        keyword.trim();
+  const handleSearch = () => {
+    const word = keyword.trim();
 
-      if (!word) {
-        return;
-      }
+    if (!word) {
+      return;
+    }
 
-      window.history.replaceState(
-        null,
-        "",
-        `/search?keyword=${encodeURIComponent(
-          word
-        )}`
-      );
+    window.history.replaceState(
+      null,
+      "",
+      `/search?keyword=${encodeURIComponent(
+        word
+      )}`
+    );
 
-      search(word);
-    };
+    search(word);
+  };
 
 
   // =====================================================
@@ -546,8 +480,7 @@ export default function SearchPage() {
 
 
               <p className="mt-1 font-bold text-orange-600">
-                {item.Item.pointRate >
-                1
+                {item.Item.pointRate > 1
                   ? `🔥 ポイント${item.Item.pointRate}倍`
                   : "🟢 通常ポイント"}
               </p>
@@ -579,9 +512,7 @@ export default function SearchPage() {
               {unitPrice !== null && (
                 <p className="mt-1 font-bold text-purple-600">
                   単価：¥
-                  {unitPrice.toFixed(
-                    2
-                  )}
+                  {unitPrice.toFixed(2)}
                 </p>
               )}
 
@@ -618,9 +549,12 @@ export default function SearchPage() {
           タイトル
       ================================================= */}
 
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      <a
+        href="/"
+        className="inline-block text-3xl font-bold text-gray-900 hover:opacity-70 dark:text-white"
+      >
         ベビトク
-      </h1>
+      </a>
 
       <p className="mt-2 text-gray-600 dark:text-gray-300">
         子育て世代のおトクを増やす。
@@ -643,10 +577,7 @@ export default function SearchPage() {
             )
           }
           onKeyDown={(e) => {
-            if (
-              e.key ===
-              "Enter"
-            ) {
+            if (e.key === "Enter") {
               e.preventDefault();
               handleSearch();
             }
@@ -708,8 +639,7 @@ export default function SearchPage() {
 
               「{searchWord}」の検索結果
 
-              {totalCount >
-                0 && (
+              {totalCount > 0 && (
                 <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                   {totalCount}件
                 </span>
@@ -807,9 +737,7 @@ export default function SearchPage() {
                               cheapest.Item.pointAmount
                             ) /
                             cheapest.Item.weight
-                          ).toFixed(
-                            2
-                          )}
+                          ).toFixed(2)}
                         </p>
                       )}
 

@@ -4,9 +4,12 @@ export default function AboutPage() {
       {/* =========================
           タイトル
       ========================= */}
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      <a
+        href="/"
+        className="inline-block text-3xl font-bold text-gray-900 hover:underline dark:text-white"
+      >
         ベビトクについて
-      </h1>
+      </a>
 
       {/* =========================
           このサイトについて
@@ -203,7 +206,7 @@ export default function AboutPage() {
       <div className="mt-8">
         <a
           href="/"
-          className="text-sm font-bold text-blue-600 hover:underline dark:text-blue-400"
+          className="text-3xl font-bold text-gray-900 dark:text-white hover:opacity-70"
         >
           ← ベビトクのトップページへ戻る
         </a>
