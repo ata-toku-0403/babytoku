@@ -4,7 +4,7 @@ export default function AboutPage() {
       {/* =========================
           タイトル
       ========================= */}
-     <h2 className="inline-block text-3xl font-bold text-gray-900 hover:underline dark:text-white">
+     <h2 className="inline-block text-3xl font-bold text-gray-900 dark:text-white">
        ベビトクについて
      </h2>
 
