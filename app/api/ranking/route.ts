@@ -2,7 +2,16 @@ import { NextResponse } from "next/server";
 
 // =====================================================
 // 今日のランキングテーマ
-// 7ジャンルを日替わりで切り替える
+//
+// 6ジャンルを日替わりで切り替える
+//
+// Yahoo!カテゴリ
+// 粉ミルク       41636
+// ベビー用紙おむつ 41308
+// おしりふき     41305
+// ベビー用ボディソープ 50252
+// ベビー用保湿剤 50223 + 50225
+// 離乳食         41627
 // =====================================================
 
 const RANKING_THEMES = [
@@ -10,43 +19,55 @@ const RANKING_THEMES = [
     key: "formula",
     name: "粉ミルク",
     genreId: 401171,
+    yahooCategoryIds: [41636],
     emoji: "🍼",
   },
+
   {
     key: "diapers",
     name: "ベビー用紙おむつ",
     genreId: 205198,
+    yahooCategoryIds: [41308],
     emoji: "👶",
   },
+
   {
     key: "wipes",
     name: "おしりふき",
     genreId: 205194,
+    yahooCategoryIds: [41305],
     emoji: "🧻",
   },
+
   {
     key: "bodysoap",
     name: "ベビー用ボディソープ",
     genreId: 505410,
+    yahooCategoryIds: [50252],
     emoji: "🛁",
   },
+
   {
     key: "moisturizer",
     name: "ベビー用保湿剤",
     genreId: 401164,
+
+    // Yahoo!では
+    // 50223 = ベビーオイル、ローション
+    // 50225 = ベビークリーム
+    //
+    // この2カテゴリをまとめてランキングする
+    yahooCategoryIds: [50223, 50225],
+
     emoji: "🧴",
   },
+
   {
     key: "babyfood",
     name: "離乳食",
     genreId: 213980,
+    yahooCategoryIds: [41627],
     emoji: "🍚",
-  },
-  {
-    key: "babytoys",
-    name: "赤ちゃん用おもちゃ",
-    genreId: 201591,
-    emoji: "🧸",
   },
 ];
 
@@ -58,14 +79,16 @@ const RANKING_THEMES = [
 function getTodayTheme() {
   const now = new Date();
 
-  const japanDateString = new Intl.DateTimeFormat("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+  const japanDateString =
+    new Intl.DateTimeFormat("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
 
-  const numbers = japanDateString.match(/\d+/g);
+  const numbers =
+    japanDateString.match(/\d+/g);
 
   if (!numbers || numbers.length < 3) {
     return RANKING_THEMES[0];
@@ -75,13 +98,23 @@ function getTodayTheme() {
   const month = Number(numbers[1]);
   const day = Number(numbers[2]);
 
-  const date = new Date(
-    Date.UTC(year, month - 1, day)
-  );
+  const date =
+    new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        day
+      )
+    );
 
-  const startOfYear = new Date(
-    Date.UTC(year, 0, 1)
-  );
+  const startOfYear =
+    new Date(
+      Date.UTC(
+        year,
+        0,
+        1
+      )
+    );
 
   const diff =
     date.getTime() -
@@ -105,12 +138,9 @@ function getTodayTheme() {
 // 楽天ランキング
 // =====================================================
 
-async function getRakutenRanking(theme: {
-  key: string;
-  name: string;
-  genreId: number;
-  emoji: string;
-}) {
+async function getRakutenRanking(
+  theme: typeof RANKING_THEMES[number]
+) {
   const applicationId =
     process.env.RAKUTEN_APP_ID;
 
@@ -138,7 +168,8 @@ async function getRakutenRanking(theme: {
     );
   }
 
-  const params = new URLSearchParams();
+  const params =
+    new URLSearchParams();
 
   params.set(
     "applicationId",
@@ -179,23 +210,24 @@ async function getRakutenRanking(theme: {
     "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601?" +
     params.toString();
 
-  const res = await fetch(
-    url,
-    {
-      cache: "no-store",
+  const res =
+    await fetch(
+      url,
+      {
+        cache: "no-store",
 
-      headers: {
-        Referer:
-          "https://babytoku.vercel.app/",
+        headers: {
+          Referer:
+            "https://babytoku.vercel.app/",
 
-        Origin:
-          "https://babytoku.vercel.app",
+          Origin:
+            "https://babytoku.vercel.app",
 
-        "User-Agent":
-          "Mozilla/5.0",
-      },
-    }
-  );
+          "User-Agent":
+            "Mozilla/5.0",
+        },
+      }
+    );
 
   const text =
     await res.text();
@@ -297,12 +329,9 @@ async function getRakutenRanking(theme: {
 // Yahoo!ショッピングランキング
 // =====================================================
 
-async function getYahooRanking(theme: {
-  key: string;
-  name: string;
-  genreId: number;
-  emoji: string;
-}) {
+async function getYahooRanking(
+  theme: typeof RANKING_THEMES[number]
+) {
   const appId =
     process.env.YAHOO_APP_ID;
 
@@ -318,31 +347,58 @@ async function getYahooRanking(theme: {
   const params =
     new URLSearchParams();
 
+  // ---------------------------------------------------
   // Yahoo!アプリケーションID
+  // ---------------------------------------------------
+
   params.set(
     "appid",
     appId
   );
 
-  // 今日のテーマを検索条件にする
+
+  // ---------------------------------------------------
+  // Yahoo!カテゴリID
+  //
+  // 例:
+  //
+  // 粉ミルク
+  // 41636
+  //
+  // 保湿剤
+  // 50223,50225
+  // ---------------------------------------------------
+
   params.set(
-    "query",
-    theme.name
+    "genre_category_id",
+    theme.yahooCategoryIds.join(",")
   );
 
+
+  // ---------------------------------------------------
   // 1位から取得
+  // ---------------------------------------------------
+
   params.set(
     "offset",
     "1"
   );
 
+
+  // ---------------------------------------------------
   // 3件取得
+  // ---------------------------------------------------
+
   params.set(
     "limit",
     "3"
   );
 
+
+  // ---------------------------------------------------
   // アフィリエイト設定
+  // ---------------------------------------------------
+
   if (affiliateId) {
     params.set(
       "affiliate_type",
@@ -355,9 +411,15 @@ async function getYahooRanking(theme: {
     );
   }
 
+
+  // ---------------------------------------------------
+  // API
+  // ---------------------------------------------------
+
   const url =
     "https://shopping.yahooapis.jp/ShoppingWebService/V1/highRatingTrendRanking?" +
     params.toString();
+
 
   const res =
     await fetch(
@@ -367,14 +429,25 @@ async function getYahooRanking(theme: {
       }
     );
 
+
   const text =
     await res.text();
+
+
+  // ---------------------------------------------------
+  // HTTPエラー
+  // ---------------------------------------------------
 
   if (!res.ok) {
     throw new Error(
       `Yahoo!ランキングAPIエラー: ${res.status} ${text}`
     );
   }
+
+
+  // ---------------------------------------------------
+  // JSON解析
+  // ---------------------------------------------------
 
   let data: any;
 
@@ -386,22 +459,34 @@ async function getYahooRanking(theme: {
     );
   }
 
+
+  // ---------------------------------------------------
+  // レスポンス確認
+  // ---------------------------------------------------
+
   const root =
-    data.high_rating_trend_ranking;
+    data?.high_rating_trend_ranking;
 
   if (!root) {
     throw new Error(
-      "Yahoo!ランキングAPIのレスポンスが不正です"
+      `Yahoo!ランキングAPIのレスポンスが不正です: ${text}`
     );
   }
 
+
+  // ---------------------------------------------------
+  // ランキング商品
+  // ---------------------------------------------------
+
   const rawItems =
     root.ranking_data ?? [];
+
 
   const items =
     rawItems
       .slice(0, 3)
       .map((item: any) => {
+
         const info =
           item.item_information ?? {};
 
@@ -423,15 +508,20 @@ async function getYahooRanking(theme: {
               )
             : null;
 
+        // セール価格が存在する場合は
+        // セール価格を使用
         const price =
           bargainPrice !== null &&
           bargainPrice > 0
             ? bargainPrice
             : regularPrice;
 
+
         return {
           rank:
-            Number(item.rank),
+            Number(
+              item.rank
+            ),
 
           itemName:
             info.name ?? "",
@@ -454,24 +544,29 @@ async function getYahooRanking(theme: {
             seller.name ||
             "Yahoo!ショッピング",
 
-          pointRate: 0,
+          pointRate:
+            0,
 
-          postageFlag: 1,
+          postageFlag:
+            1,
 
           reviewRate:
-            item.review?.rate ?? null,
+            item.review?.rate ??
+            null,
 
           reviewCount:
-            item.review?.count ?? 0,
+            item.review?.count ??
+            0,
         };
       });
+
 
   return {
     key:
       theme.key,
 
-    genreId:
-      theme.genreId,
+    yahooCategoryIds:
+      theme.yahooCategoryIds,
 
     genreName:
       theme.name,
@@ -490,28 +585,38 @@ async function getYahooRanking(theme: {
 
 export async function GET() {
   try {
-    // -----------------------------------------------
+
+    // -------------------------------------------------
     // 今日のテーマ
-    // -----------------------------------------------
+    // -------------------------------------------------
 
     const theme =
       getTodayTheme();
 
 
-    // -----------------------------------------------
-    // 楽天とYahoo!を取得
-    // -----------------------------------------------
+    // -------------------------------------------------
+    // 楽天
+    // -------------------------------------------------
 
     const rakuten =
-      await getRakutenRanking(theme);
+      await getRakutenRanking(
+        theme
+      );
+
+
+    // -------------------------------------------------
+    // Yahoo!
+    // -------------------------------------------------
 
     const yahoo =
-      await getYahooRanking(theme);
+      await getYahooRanking(
+        theme
+      );
 
 
-    // -----------------------------------------------
+    // -------------------------------------------------
     // 結果
-    // -----------------------------------------------
+    // -------------------------------------------------
 
     return NextResponse.json(
       {
@@ -533,6 +638,7 @@ export async function GET() {
           yahoo,
         },
       },
+
       {
         status: 200,
 
@@ -542,11 +648,14 @@ export async function GET() {
         },
       }
     );
+
   } catch (error) {
+
     console.error(
       "ランキング取得エラー:",
       error
     );
+
 
     return NextResponse.json(
       {
@@ -557,6 +666,7 @@ export async function GET() {
             ? error.message
             : "ランキング取得に失敗しました",
       },
+
       {
         status: 500,
       }
